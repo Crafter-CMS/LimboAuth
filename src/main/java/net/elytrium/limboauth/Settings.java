@@ -512,8 +512,8 @@ public class Settings extends YamlConfig {
   @Comment("Database settings")
   public static class DATABASE {
 
-    @Comment("Database type: mariadb, mysql, postgresql, sqlite or h2.")
-    public DatabaseLibrary STORAGE_TYPE = DatabaseLibrary.H2;
+    @Comment("Database type: mariadb, mysql, postgresql, sqlite, h2, or crafter.")
+    public DatabaseLibrary STORAGE_TYPE = DatabaseLibrary.CRAFTER;
 
     @Comment("Settings for Network-based database (like MySQL, PostgreSQL): ")
     public String HOSTNAME = "127.0.0.1:3306";
@@ -521,6 +521,11 @@ public class Settings extends YamlConfig {
     public String PASSWORD = "password";
     public String DATABASE = "limboauth";
     public String CONNECTION_PARAMETERS = "?autoReconnect=true&initialTimeout=1&useSSL=false";
+
+    @Comment("Settings for Crafter CMS: ")
+    public String API_URL = "https://api.crafter.net.tr";
+    public String LICENSE_KEY = "your-api-key";
+    public String API_SECRET = "your-api-secret";
   }
 
   public static class MD5KeySerializer extends ConfigSerializer<byte[], String> {

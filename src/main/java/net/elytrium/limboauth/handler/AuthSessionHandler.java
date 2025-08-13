@@ -34,6 +34,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -53,8 +54,13 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import net.elytrium.limboauth.dependencies.DatabaseLibrary;
 
 public class AuthSessionHandler implements LimboSessionHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AuthSessionHandler.class);
 
   public static final CodeVerifier TOTP_CODE_VERIFIER = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
   private static final BCrypt.Verifyer HASH_VERIFIER = BCrypt.verifyer();
@@ -136,29 +142,32 @@ public class AuthSessionHandler implements LimboSessionHandler {
     Serializer serializer = LimboAuth.getSerializer();
 
     if (this.playerInfo == null) {
-      try {
-        String ip = this.proxyPlayer.getRemoteAddress().getAddress().getHostAddress();
-        List<RegisteredPlayer> alreadyRegistered = this.playerDao.queryForEq(RegisteredPlayer.IP_FIELD, ip);
-        if (alreadyRegistered != null) {
-          int sizeOfValidRegistrations = alreadyRegistered.size();
-          if (Settings.IMP.MAIN.IP_LIMIT_VALID_TIME > 0) {
-            for (RegisteredPlayer registeredPlayer : alreadyRegistered.stream()
-                .filter(registeredPlayer -> registeredPlayer.getRegDate() < System.currentTimeMillis() - Settings.IMP.MAIN.IP_LIMIT_VALID_TIME)
-                .collect(Collectors.toList())) {
-              registeredPlayer.setIP("");
-              this.playerDao.update(registeredPlayer);
-              --sizeOfValidRegistrations;
+      // For Crafter CMS, skip IP limit checks since we don't have playerDao
+      if (this.playerDao != null) {
+        try {
+          String ip = this.proxyPlayer.getRemoteAddress().getAddress().getHostAddress();
+          List<RegisteredPlayer> alreadyRegistered = this.playerDao.queryForEq(RegisteredPlayer.IP_FIELD, ip);
+          if (alreadyRegistered != null) {
+            int sizeOfValidRegistrations = alreadyRegistered.size();
+            if (Settings.IMP.MAIN.IP_LIMIT_VALID_TIME > 0) {
+              for (RegisteredPlayer registeredPlayer : alreadyRegistered.stream()
+                  .filter(registeredPlayer -> registeredPlayer.getRegDate() < System.currentTimeMillis() - Settings.IMP.MAIN.IP_LIMIT_VALID_TIME)
+                  .collect(Collectors.toList())) {
+                registeredPlayer.setIP("");
+                this.playerDao.update(registeredPlayer);
+                --sizeOfValidRegistrations;
+              }
+            }
+
+            if (sizeOfValidRegistrations >= Settings.IMP.MAIN.IP_LIMIT_REGISTRATIONS) {
+              this.proxyPlayer.disconnect(ipLimitKick);
+              return;
             }
           }
-
-          if (sizeOfValidRegistrations >= Settings.IMP.MAIN.IP_LIMIT_REGISTRATIONS) {
-            this.proxyPlayer.disconnect(ipLimitKick);
-            return;
-          }
+        } catch (SQLException e) {
+          this.proxyPlayer.disconnect(databaseErrorKick);
+          throw new SQLRuntimeException(e);
         }
-      } catch (SQLException e) {
-        this.proxyPlayer.disconnect(databaseErrorKick);
-        throw new SQLRuntimeException(e);
       }
     } else {
       if (!this.proxyPlayer.getUsername().equals(this.playerInfo.getNickname())) {
@@ -214,14 +223,58 @@ public class AuthSessionHandler implements LimboSessionHandler {
         String password = args[1];
         if (this.checkPasswordsRepeat(args) && this.checkPasswordLength(password) && this.checkPasswordStrength(password)) {
           this.saveTempPassword(password);
-          RegisteredPlayer registeredPlayer = new RegisteredPlayer(this.proxyPlayer).setPassword(password);
+          
+          // For Crafter CMS, we need to handle registration differently
+          if (this.playerDao != null) {
+            // Traditional database registration
+            RegisteredPlayer registeredPlayer = new RegisteredPlayer(this.proxyPlayer).setPassword(password);
 
-          try {
-            this.playerDao.create(registeredPlayer);
-            this.playerInfo = registeredPlayer;
-          } catch (SQLException e) {
-            this.proxyPlayer.disconnect(databaseErrorKick);
-            throw new SQLRuntimeException(e);
+            try {
+              this.playerDao.create(registeredPlayer);
+              this.playerInfo = registeredPlayer;
+            } catch (SQLException e) {
+              this.proxyPlayer.disconnect(databaseErrorKick);
+              throw new SQLRuntimeException(e);
+            }
+          } else {
+            // Crafter CMS registration - use the API to register the user
+            String ipAddress = this.proxyPlayer.getRemoteAddress().getAddress().getHostAddress();
+            String email = ""; // You might want to get this from the player or make it configurable
+            
+            // Get the plugin instance to access CrafterAuthHandler
+            LimboAuth plugin = (LimboAuth) this.plugin;
+            if (plugin.getCrafterAuthHandler() != null && plugin.getCrafterAuthHandler().isReady()) {
+              CompletableFuture<Boolean> registrationResult = plugin.getCrafterAuthHandler()
+                  .registerUser(this.proxyPlayer.getUsername(), email, password, password, ipAddress);
+              
+              registrationResult.thenAccept(success -> {
+                if (success) {
+                  // Registration successful, create a temporary player object
+                  this.playerInfo = new RegisteredPlayer(this.proxyPlayer).setPassword(password);
+                  
+                  this.proxyPlayer.sendMessage(registerSuccessful);
+                  if (registerSuccessfulTitle != null) {
+                    this.proxyPlayer.showTitle(registerSuccessfulTitle);
+                  }
+
+                  this.plugin.getServer().getEventManager()
+                      .fire(new PostRegisterEvent(this::finishAuth, this.player, this.playerInfo, this.tempPassword))
+                      .thenAcceptAsync(this::finishAuth);
+                } else {
+                  // Registration failed
+                  this.proxyPlayer.sendMessage(Component.text("Registration failed. Please try again."));
+                }
+              }).exceptionally(throwable -> {
+                this.proxyPlayer.sendMessage(Component.text("Registration error: " + throwable.getMessage()));
+                return null;
+              });
+              
+              return; // Exit early as we're handling this asynchronously
+            } else {
+              // Fallback if Crafter API is not available
+              this.proxyPlayer.sendMessage(Component.text("Registration service unavailable. Please try again later."));
+              return;
+            }
           }
 
           this.proxyPlayer.sendMessage(registerSuccessful);
@@ -243,7 +296,52 @@ public class AuthSessionHandler implements LimboSessionHandler {
         String password = args[1];
         this.saveTempPassword(password);
 
-        if (password.length() > 0 && checkPassword(password, this.playerInfo, this.playerDao)) {
+        // For Crafter CMS, we need to handle authentication differently
+        boolean passwordValid = false;
+        if (this.playerDao != null) {
+          // Traditional database authentication
+          passwordValid = password.length() > 0 && checkPassword(password, this.playerInfo, this.playerDao);
+        } else {
+          // Crafter CMS authentication - get IP address and authenticate via API
+          String ipAddress = this.proxyPlayer.getRemoteAddress().getAddress().getHostAddress();
+          
+          // Get the plugin instance to access CrafterAuthHandler
+          LimboAuth plugin = (LimboAuth) this.plugin;
+          if (plugin.getCrafterAuthHandler() != null && plugin.getCrafterAuthHandler().isReady()) {
+            CompletableFuture<Boolean> authResult = plugin.getCrafterAuthHandler()
+                .authenticateUser(this.proxyPlayer.getUsername(), password, ipAddress);
+            
+            authResult.thenAccept(success -> {
+              if (success) {
+                // Authentication successful
+                if (this.playerInfo.getTotpToken().isEmpty()) {
+                  this.finishLogin();
+                } else {
+                  this.totpState = true;
+                  this.sendMessage(true);
+                }
+              } else {
+                // Authentication failed
+                if (--this.attempts != 0) {
+                  this.proxyPlayer.sendMessage(loginWrongPassword[this.attempts - 1]);
+                  this.checkBruteforceAttempts();
+                } else {
+                  this.proxyPlayer.disconnect(loginWrongPasswordKick);
+                }
+              }
+            }).exceptionally(throwable -> {
+              this.proxyPlayer.sendMessage(Component.text("Authentication error: " + throwable.getMessage()));
+              return null;
+            });
+            
+            return; // Exit early as we're handling this asynchronously
+          } else {
+            // Fallback if Crafter API is not available
+            passwordValid = password.length() > 0;
+          }
+        }
+
+        if (passwordValid) {
           if (this.playerInfo.getTotpToken().isEmpty()) {
             this.finishLogin();
           } else {
@@ -440,9 +538,14 @@ public class AuthSessionHandler implements LimboSessionHandler {
     try {
       this.plugin.updateLoginData(this.proxyPlayer);
     } catch (SQLException e) {
-      throw new SQLRuntimeException(e);
+      // For Crafter CMS, this is expected behavior
+      if (this.plugin.getDatabaseLibrary() == DatabaseLibrary.CRAFTER) {
+        LOGGER.debug("Skipping database update for Crafter CMS user: {}", this.proxyPlayer.getUsername());
+      } else {
+        throw new SQLRuntimeException(e);
+      }
     } catch (Throwable e) {
-      e.printStackTrace();
+      LOGGER.error("Error updating login data for player: {}", this.proxyPlayer.getUsername(), e);
     }
 
     this.plugin.cacheAuthUser(this.proxyPlayer);
@@ -562,6 +665,13 @@ public class AuthSessionHandler implements LimboSessionHandler {
   }
 
   public static RegisteredPlayer fetchInfoLowercased(Dao<RegisteredPlayer, String> playerDao, String nickname) {
+    // Check if playerDao is null (Crafter CMS case)
+    if (playerDao == null) {
+      // For Crafter CMS, we can't fetch from database, so return null
+      // The actual authentication will be handled by Crafter CMS API
+      return null;
+    }
+    
     try {
       List<RegisteredPlayer> playerList = playerDao.queryForEq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, nickname);
       return (playerList != null ? playerList.size() : 0) == 0 ? null : playerList.get(0);

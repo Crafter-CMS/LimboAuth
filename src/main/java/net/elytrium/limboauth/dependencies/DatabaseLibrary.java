@@ -92,6 +92,15 @@ public enum DatabaseLibrary {
       BaseLibrary.SQLITE,
           (classLoader, dir, jdbc, user, password) -> fromDriver(classLoader.loadClass("org.sqlite.JDBC"), jdbc, user, password, true),
           (dir, hostname, database) -> "jdbc:sqlite:" + dir + "/limboauth.db"
+  ),
+  CRAFTER(
+      BaseLibrary.CRAFTER,
+          (classLoader, dir, jdbc, user, password) -> {
+            // Crafter CMS doesn't use traditional JDBC connections
+            // This is a placeholder for compatibility
+            throw new UnsupportedOperationException("Crafter CMS uses HTTP API, not JDBC connections");
+          },
+          (dir, hostname, database) -> "crafter://" + hostname + "/" + database
   );
 
   private final BaseLibrary baseLibrary;
@@ -135,6 +144,7 @@ public enum DatabaseLibrary {
             case MARIADB -> "org.mariadb.jdbc.Driver";
             case POSTGRESQL -> "org.postgresql.Driver";
             case SQLITE -> "org.sqlite.JDBC";
+            case CRAFTER -> throw new UnsupportedOperationException("Crafter CMS doesn't use JDBC drivers");
           }
       );
 

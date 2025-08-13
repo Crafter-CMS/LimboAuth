@@ -47,6 +47,8 @@ import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 import net.elytrium.limboauth.model.SQLRuntimeException;
 import net.kyori.adventure.text.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Customizable events priority
 public class AuthListener {
@@ -184,6 +186,13 @@ public class AuthListener {
 
   @Subscribe(order = PostOrder.FIRST)
   public void onGameProfileRequest(GameProfileRequestEvent event) {
+    // For Crafter CMS, skip traditional database operations
+    if (this.playerDao == null) {
+      Logger logger = LoggerFactory.getLogger(AuthListener.class);
+      logger.debug("Skipping GameProfileRequest database operations for Crafter CMS");
+      return;
+    }
+
     if (Settings.IMP.MAIN.SAVE_UUID && (this.floodgateApi == null || !this.floodgateApi.isFloodgatePlayer(event.getOriginalProfile().getId()))) {
       RegisteredPlayer registeredPlayer = AuthSessionHandler.fetchInfo(this.playerDao, event.getOriginalProfile().getId());
 

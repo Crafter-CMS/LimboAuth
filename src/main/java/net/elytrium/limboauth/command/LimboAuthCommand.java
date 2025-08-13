@@ -115,6 +115,17 @@ public class LimboAuthCommand extends RatelimitedCommand {
         (LimboAuthCommand parent, CommandSource source, String[] args) -> {
           parent.plugin.reload();
           source.sendMessage(LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.RELOAD));
+        }),
+    TEST_CRAFTER("Test Crafter CMS API connection.", Settings.IMP.MAIN.COMMAND_PERMISSION_STATE.RELOAD,
+        (LimboAuthCommand parent, CommandSource source, String[] args) -> {
+          if (parent.plugin.getCrafterAPIClient() != null) {
+            source.sendMessage(Component.text("Testing Crafter CMS API connection...", NamedTextColor.YELLOW));
+            parent.plugin.getCrafterAPIClient().testConnection().thenAccept(result -> {
+              source.sendMessage(Component.text("Test result: " + result, NamedTextColor.GREEN));
+            });
+          } else {
+            source.sendMessage(Component.text("Crafter CMS API client is not available.", NamedTextColor.RED));
+          }
         });
 
     private final String command;

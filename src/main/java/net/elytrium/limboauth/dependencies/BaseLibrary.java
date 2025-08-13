@@ -56,6 +56,11 @@ public enum BaseLibrary {
       "org.xerial",
       "sqlite-jdbc",
       "3.40.0.0"
+  ),
+  CRAFTER(
+      "net.craftercms",
+      "crafter-cms-api",
+      "1.0.0"
   );
 
   private final Path filenamePath;

@@ -74,6 +74,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -98,9 +99,13 @@ import net.elytrium.limboauth.command.ForceRegisterCommand;
 import net.elytrium.limboauth.command.ForceUnregisterCommand;
 import net.elytrium.limboauth.command.LimboAuthCommand;
 import net.elytrium.limboauth.command.PremiumCommand;
+import net.elytrium.limboauth.dependencies.crafter.CrafterAPIClient;
+import net.elytrium.limboauth.dependencies.crafter.CrafterAuthHandler;
+import net.elytrium.limboauth.dependencies.crafter.model.CrafterResponse;
 import net.elytrium.limboauth.command.TotpCommand;
 import net.elytrium.limboauth.command.UnregisterCommand;
 import net.elytrium.limboauth.dependencies.DatabaseLibrary;
+import net.elytrium.limboauth.dependencies.crafter.CrafterAPIClient;
 import net.elytrium.limboauth.event.AuthPluginReloadEvent;
 import net.elytrium.limboauth.event.PreAuthorizationEvent;
 import net.elytrium.limboauth.event.PreEvent;
@@ -184,6 +189,9 @@ public class LimboAuth {
   private ScheduledTask purgeBruteforceCacheTask;
 
   private ConnectionSource connectionSource;
+  private CrafterAPIClient crafterAPIClient;
+  private CrafterAuthHandler crafterAuthHandler;
+  private DatabaseLibrary databaseLibrary;
   private Dao<RegisteredPlayer, String> playerDao;
   private Pattern nicknameValidationPattern;
   private Limbo authServer;
@@ -314,38 +322,69 @@ public class LimboAuth {
     this.bruteforceCache.clear();
 
     Settings.DATABASE dbConfig = Settings.IMP.DATABASE;
-    DatabaseLibrary databaseLibrary = dbConfig.STORAGE_TYPE;
-    try {
-      this.connectionSource = databaseLibrary.connectToORM(
-          this.dataDirectoryFile.toPath().toAbsolutePath(),
-          dbConfig.HOSTNAME,
-          dbConfig.DATABASE + dbConfig.CONNECTION_PARAMETERS,
-          dbConfig.USER,
-          dbConfig.PASSWORD
-      );
-    } catch (ReflectiveOperationException e) {
-      throw new ReflectionException(e);
-    } catch (SQLException e) {
-      throw new SQLRuntimeException(e);
-    } catch (IOException | URISyntaxException e) {
-      throw new IllegalArgumentException(e);
+    this.databaseLibrary = dbConfig.STORAGE_TYPE;
+    
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER) {
+      // Initialize Crafter CMS API client
+      LOGGER.info("Initializing Crafter CMS API client...");
+      this.crafterAPIClient = new CrafterAPIClient(Settings.IMP, LOGGER);
+      this.crafterAPIClient.initialize().thenAccept(success -> {
+        if (success) {
+          LOGGER.info("Crafter CMS API initialized successfully");
+          LOGGER.info("Website info: " + this.crafterAPIClient.getWebsite());
+          
+          // Initialize CrafterAuthHandler after successful API initialization
+          this.crafterAuthHandler = new CrafterAuthHandler(this.crafterAPIClient, LOGGER);
+          LOGGER.info("CrafterAuthHandler initialized successfully");
+        } else {
+          LOGGER.error("Failed to initialize Crafter CMS API");
+          LOGGER.error("Please check your API configuration and license key");
+        }
+      }).exceptionally(throwable -> {
+        LOGGER.error("Exception during Crafter CMS API initialization: " + throwable.getMessage(), throwable);
+        return null;
+      });
+      
+      // For Crafter CMS, we don't need traditional database connection
+      this.connectionSource = null;
+    } else {
+      try {
+        this.connectionSource = this.databaseLibrary.connectToORM(
+            this.dataDirectoryFile.toPath().toAbsolutePath(),
+            dbConfig.HOSTNAME,
+            dbConfig.DATABASE + dbConfig.CONNECTION_PARAMETERS,
+            dbConfig.USER,
+            dbConfig.PASSWORD
+        );
+      } catch (ReflectiveOperationException e) {
+        throw new ReflectionException(e);
+      } catch (SQLException e) {
+        throw new SQLRuntimeException(e);
+      } catch (IOException | URISyntaxException e) {
+        throw new IllegalArgumentException(e);
+      }
     }
 
     this.nicknameValidationPattern = Pattern.compile(Settings.IMP.MAIN.ALLOWED_NICKNAME_REGEX);
 
-    try {
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER) {
+      // For Crafter CMS, we don't need traditional database operations
+      this.playerDao = null;
+    } else {
       try {
-        TableUtils.createTableIfNotExists(this.connectionSource, RegisteredPlayer.class);
-      } catch (SQLException e) {
-        if (!e.getMessage().contains("CREATE INDEX")) {
-          throw e;
+        try {
+          TableUtils.createTableIfNotExists(this.connectionSource, RegisteredPlayer.class);
+        } catch (SQLException e) {
+          if (!e.getMessage().contains("CREATE INDEX")) {
+            throw e;
+          }
         }
-      }
 
-      this.playerDao = DaoManager.createDao(this.connectionSource, RegisteredPlayer.class);
-      this.migrateDb(this.playerDao);
-    } catch (SQLException e) {
-      throw new SQLRuntimeException(e);
+        this.playerDao = DaoManager.createDao(this.connectionSource, RegisteredPlayer.class);
+        this.migrateDb(this.playerDao);
+      } catch (SQLException e) {
+        throw new SQLRuntimeException(e);
+      }
     }
 
     CommandManager manager = this.server.getCommandManager();
@@ -574,7 +613,33 @@ public class LimboAuth {
       return;
     }
 
-    RegisteredPlayer registeredPlayer = AuthSessionHandler.fetchInfo(this.playerDao, nickname);
+    RegisteredPlayer registeredPlayer = null;
+    
+    // For Crafter CMS, we'll handle authentication differently
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER && this.crafterAuthHandler != null && this.crafterAuthHandler.isReady()) {
+      // Use Crafter CMS API to check if user exists
+      try {
+        // For now, we'll use a synchronous approach to avoid blocking
+        // In a production environment, you might want to implement proper async handling
+        CompletableFuture<RegisteredPlayer> userCheck = this.crafterAuthHandler.checkUserExists(nickname);
+        
+        // Wait for the result with a timeout
+        registeredPlayer = userCheck.get(5, TimeUnit.SECONDS);
+        
+        if (registeredPlayer != null) {
+          LOGGER.debug("User {} found in Crafter CMS", nickname);
+        } else {
+          LOGGER.debug("User {} not found in Crafter CMS", nickname);
+        }
+      } catch (Exception e) {
+        LOGGER.warn("Error checking user existence in Crafter CMS: " + e.getMessage());
+        // Fall back to assuming user needs to register
+        registeredPlayer = null;
+      }
+    } else {
+      // Use traditional database lookup
+      registeredPlayer = AuthSessionHandler.fetchInfo(this.playerDao, nickname);
+    }
 
     boolean onlineMode = player.isOnlineMode();
     TaskEvent.Result result = TaskEvent.Result.NORMAL;
@@ -678,6 +743,16 @@ public class LimboAuth {
   }
 
   public void updateLoginData(Player player) throws SQLException {
+    // For Crafter CMS, we don't need to update login data in traditional database
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER || this.playerDao == null) {
+      // Update login data through Crafter CMS API if needed
+      if (this.crafterAPIClient != null && this.crafterAPIClient.isInitialized()) {
+        // TODO: Implement login data update through Crafter CMS API
+        LOGGER.debug("Skipping traditional database update for Crafter CMS user: {}", player.getUsername());
+      }
+      return;
+    }
+
     String lowercaseNickname = player.getUsername().toLowerCase(Locale.ROOT);
     UpdateBuilder<RegisteredPlayer, String> updateBuilder = this.playerDao.updateBuilder();
     updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, lowercaseNickname);
@@ -753,6 +828,29 @@ public class LimboAuth {
   }
 
   public PremiumResponse isPremiumInternal(String nickname) {
+    // Check if using Crafter CMS
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER && this.crafterAPIClient != null && this.crafterAPIClient.isInitialized()) {
+      try {
+        // Use Crafter CMS API to check user existence
+        // Note: IP address is not needed for user existence check, only for auth operations
+        CompletableFuture<CrafterResponse> future = this.crafterAPIClient.checkUserExists(nickname);
+        
+        // For now, we'll return UNKNOWN since we can't block here
+        // The actual check will be done asynchronously
+        // TODO: Implement proper async handling for Crafter CMS premium checks
+        return new PremiumResponse(PremiumState.UNKNOWN);
+      } catch (Exception e) {
+        LOGGER.error("Unable to check if account is premium via Crafter CMS.", e);
+        return new PremiumResponse(PremiumState.ERROR);
+      }
+    }
+    
+    // Fallback to traditional database check
+    if (this.playerDao == null) {
+      LOGGER.warn("Player DAO is null, cannot check premium status");
+      return new PremiumResponse(PremiumState.ERROR);
+    }
+    
     try {
       QueryBuilder<RegisteredPlayer, String> crackedCountQuery = this.playerDao.queryBuilder();
       crackedCountQuery.where()
@@ -784,6 +882,14 @@ public class LimboAuth {
   }
 
   public boolean isPremiumUuid(UUID uuid) {
+    // For Crafter CMS, we need to handle this differently since playerDao is null
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER) {
+      // TODO: Implement Crafter CMS premium UUID check
+      // For now, return false to avoid errors
+      LOGGER.debug("Premium UUID check not yet implemented for Crafter CMS");
+      return false;
+    }
+    
     try {
       QueryBuilder<RegisteredPlayer, String> premiumCountQuery = this.playerDao.queryBuilder();
       premiumCountQuery.where()
@@ -959,6 +1065,10 @@ public class LimboAuth {
     return this.playerDao;
   }
 
+  public DatabaseLibrary getDatabaseLibrary() {
+    return this.databaseLibrary;
+  }
+
   private static void setLogger(Logger logger) {
     LOGGER = logger;
   }
@@ -1111,5 +1221,23 @@ public class LimboAuth {
     UNKNOWN,
     RATE_LIMIT,
     ERROR
+  }
+
+  /**
+   * Get the Crafter CMS API client instance.
+   *
+   * @return The Crafter CMS API client, or null if not initialized
+   */
+  public CrafterAPIClient getCrafterAPIClient() {
+    return this.crafterAPIClient;
+  }
+
+  /**
+   * Get the Crafter CMS authentication handler instance.
+   *
+   * @return The Crafter CMS authentication handler, or null if not initialized
+   */
+  public CrafterAuthHandler getCrafterAuthHandler() {
+    return this.crafterAuthHandler;
   }
 }
