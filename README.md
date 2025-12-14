@@ -8,7 +8,7 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 
 ### 🎯 Temel Özellikler
 
-- **Çoklu Veritabanı Desteği**: H2, MySQL, PostgreSQL, Crafter CMS API
+- **Çoklu Veritabanı Desteği**: Crafter CMS API ,H2, MySQL, PostgreSQL,
 - **Gelişmiş Güvenlik**: BCrypt şifreleme algoritması
 - **2FA Desteği**: TOTP tabanlı iki faktörlü kimlik doğrulama
 - **Floodgate Entegrasyonu**: Bedrock oyuncuları için özel destek
@@ -16,7 +16,7 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 - **AuthMe Geçişi**: AuthMe benzeri eklentilerden kolayca geçiş yapabilme
 - **Zayıf Şifre Engelleme**: Güvenli olmayan şifreleri otomatik olarak engelleme
 - **Schematic Desteği**: MCEdit schematic world, dünya yükleme
-- **Crafter CMS Entegrasyonu**: Web tabanlı kullanıcı yönetimi sistemi
+- **Crafter CMS Entegrasyonu**: Kolayca siteniz ile entegrasyon
 
 ### 🔧 Teknik Özellikler
 
