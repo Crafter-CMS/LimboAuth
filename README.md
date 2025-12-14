@@ -33,14 +33,12 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 2. JAR dosyasını Velocity sunucunuzun `plugins` klasörüne atın
 3. Sunucuyu başlatın ve config dosyasını düzenleyin
 
-## 📝 Lisans
-
-Bu proje [GNU Affero General Public License v3.0](LICENSE) altında lisanslanmıştır.
-
 ## 🙏 Teşekkürler
 - [Elytrium](https://github.com/Elytrium) - Orijinal LimboAuth projesi için
 - [LimboAPI](https://github.com/Elytrium/LimboAPI) - Sanal sunucu altyapısı için
 
----
+## 📝 Lisans
 
-**CrafterAuth** ile güvenli ve hızlı bir kimlik doğrulama deneyimi! 
+Bu proje [GNU Affero General Public License v3.0](LICENSE) altında lisanslanmıştır.
+
+---
