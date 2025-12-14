@@ -244,11 +244,13 @@ public class LimboAuth {
     metrics.addCustomChart(new SingleLineChart("registered_players", () -> Math.toIntExact(this.playerDao.countOf())));
 
     this.server.getScheduler().buildTask(this, () -> {
-      if (!UpdatesChecker.checkVersionByURL("https://raw.githubusercontent.com/Elytrium/LimboAuth/master/VERSION", Settings.IMP.VERSION)) {
-        LOGGER.error("****************************************");
-        LOGGER.warn("The new LimboAuth update was found, please update.");
-        LOGGER.error("https://github.com/Elytrium/LimboAuth/releases/");
-        LOGGER.error("****************************************");
+      if (!UpdatesChecker.checkVersionByURL("https://raw.githubusercontent.com/luaqenn/CrafterAuth/master/VERSION", Settings.IMP.VERSION)) {
+        LOGGER.info("\u001B[32m╔════════════════════════════════════════════════╗");
+        LOGGER.info("║  [!] Yeni güncelleme mevcut!                  ║");
+        LOGGER.info("║  Mevcut sürüm: " + Settings.IMP.VERSION + "                           ║");
+        LOGGER.info("║  İndirmek için:                                ║");
+        LOGGER.info("║  https://github.com/luaqenn/CrafterAuth/releases/");
+        LOGGER.info("╚════════════════════════════════════════════════╝\u001B[0m");
       }
     }).schedule();
   }
