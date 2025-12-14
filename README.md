@@ -33,7 +33,7 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 
 ## 🙏 Teşekkürler
 - [Elytrium](https://github.com/Elytrium) - Orijinal LimboAuth projesi için
-- [LimboAPI](https://github.com/Elytrium/LimboAPI) - Sanal sunucu altyapısı için
+- [LimboAPI](https://github.com/Elytrium/LimboAPI) - API için
 
 ## 📝 Lisans
 
