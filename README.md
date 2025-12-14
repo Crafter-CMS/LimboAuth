@@ -17,12 +17,11 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 - **Özelleştirilebilir**: Tüm mesajlar ve ayarlar tamamen özelleştirilebilir
 - **AuthMe Geçişi**: AuthMe benzeri eklentilerden kolayca geçiş yapabilme
 - **Zayıf Şifre Engelleme**: Güvenli olmayan şifreleri otomatik olarak engelleme
-- **World Desteği**: MCEdit schematic world yükleme
+- **Schematic Desteği**: MCEdit schematic world, dünya yükleme
 - **Crafter CMS Entegrasyonu**: Web tabanlı kullanıcı yönetimi sistemi
 
 ### 🔧 Teknik Özellikler
 
-- LimboAPI tabanlı sanal sunucu teknolojisi
 - Yüksek performans ve düşük kaynak kullanımı
 - Esnek konfigürasyon sistemi
 - Otomatik versiyon kontrolü
@@ -33,12 +32,6 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 1. [Releases](https://github.com/luaqenn/CrafterAuth/releases) sayfasından en son sürümü indirin
 2. JAR dosyasını Velocity sunucunuzun `plugins` klasörüne atın
 3. Sunucuyu başlatın ve config dosyasını düzenleyin
-
-## 🔗 Bağlantılar
-
-- **GitHub Repository**: [luaqenn/CrafterAuth](https://github.com/luaqenn/CrafterAuth)
-- **Releases**: [GitHub Releases](https://github.com/luaqenn/CrafterAuth/releases)
-- **Original Project**: [Elytrium/LimboAuth](https://github.com/Elytrium/LimboAuth)
 
 ## 📝 Lisans
 
