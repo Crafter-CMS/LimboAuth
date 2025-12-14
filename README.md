@@ -1,7 +1,5 @@
 # CrafterAuth
 
-> 🔗 Bu proje [Elytrium/LimboAuth](https://github.com/Elytrium/LimboAuth)'un bir forkudur.
-
 ## 📋 Hakkında
 
 CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü ve esnek bir kimlik doğrulama sistemidir. LimboAPI tabanlı sanal sunucu (Limbo) teknolojisi kullanarak oyunculara güvenli ve hızlı bir giriş deneyimi sunar.
