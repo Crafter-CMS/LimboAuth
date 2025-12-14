@@ -14,11 +14,9 @@ CrafterAuth, Minecraft Velocity proxy sunucuları için geliştirilmiş güçlü
 - **Gelişmiş Güvenlik**: BCrypt şifreleme algoritması
 - **2FA Desteği**: TOTP tabanlı iki faktörlü kimlik doğrulama
 - **Floodgate Entegrasyonu**: Bedrock oyuncuları için özel destek
-- **Hybrid Mod**: Online/Offline/Floodgate karma mod desteği
 - **Özelleştirilebilir**: Tüm mesajlar ve ayarlar tamamen özelleştirilebilir
 - **AuthMe Geçişi**: AuthMe benzeri eklentilerden kolayca geçiş yapabilme
 - **Zayıf Şifre Engelleme**: Güvenli olmayan şifreleri otomatik olarak engelleme
-- **UUID Yönetimi**: Veritabanından UUID belirleme özelliği
 - **World Desteği**: MCEdit schematic world yükleme
 - **Crafter CMS Entegrasyonu**: Web tabanlı kullanıcı yönetimi sistemi
 
