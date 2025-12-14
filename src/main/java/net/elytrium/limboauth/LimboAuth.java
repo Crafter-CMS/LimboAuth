@@ -99,13 +99,12 @@ import net.elytrium.limboauth.command.ForceRegisterCommand;
 import net.elytrium.limboauth.command.ForceUnregisterCommand;
 import net.elytrium.limboauth.command.LimboAuthCommand;
 import net.elytrium.limboauth.command.PremiumCommand;
-import net.elytrium.limboauth.dependencies.crafter.CrafterAPIClient;
-import net.elytrium.limboauth.dependencies.crafter.CrafterAuthHandler;
-import net.elytrium.limboauth.dependencies.crafter.model.CrafterResponse;
 import net.elytrium.limboauth.command.TotpCommand;
 import net.elytrium.limboauth.command.UnregisterCommand;
 import net.elytrium.limboauth.dependencies.DatabaseLibrary;
 import net.elytrium.limboauth.dependencies.crafter.CrafterAPIClient;
+import net.elytrium.limboauth.dependencies.crafter.CrafterAuthHandler;
+import net.elytrium.limboauth.dependencies.crafter.model.CrafterResponse;
 import net.elytrium.limboauth.event.AuthPluginReloadEvent;
 import net.elytrium.limboauth.event.PreAuthorizationEvent;
 import net.elytrium.limboauth.event.PreEvent;
@@ -331,14 +330,45 @@ public class LimboAuth {
       this.crafterAPIClient.initialize().thenAccept(success -> {
         if (success) {
           LOGGER.info("Crafter CMS API initialized successfully");
-          LOGGER.info("Website info: " + this.crafterAPIClient.getWebsite());
+          
+          // Print beautiful Crafter banner
+          LOGGER.info("╔══════════════════════════════════════════════════════════════╗");
+          LOGGER.info("║  ██████╗ ██████╗   █████╗  ███████╗████████╗███████╗██████╗  ║");
+          LOGGER.info("║ ██╔════╝ ██╔══██╗ ██╔══██╗ ██╔════╝╚══██╔══╝██╔════╝██╔══██╗ ║");
+          LOGGER.info("║ ██║      ██████╔╝ ███████║ █████╗     ██║   █████╗  ██████╔╝ ║");
+          LOGGER.info("║ ██║      ██╔══██╗ ██╔══██║ ██╔══╝     ██║   ██╔══╝  ██╔══██╗ ║");
+          LOGGER.info("║ ╚██████╗ ██║  ██║ ██║  ██║ ██║        ██║   ███████╗██║  ██║ ║");
+          LOGGER.info("║  ╚═════╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝        ╚═╝   ╚══════╝╚═╝  ╚═╝ ║");
+          LOGGER.info("╠══════════════════════════════════════════════════════════════╣");
+          
+          String websiteName = this.crafterAPIClient.getWebsite().getName();
+          String websiteUrl = this.crafterAPIClient.getWebsite().getUrl();
+          
+          // Format the info lines with proper padding
+          String welcomeLine = String.format("║  Hoşgeldiniz: %-45s  ║", websiteName);
+          String websiteLine = String.format("║  Website: %-49s  ║", websiteUrl);
+          
+          LOGGER.info(welcomeLine);
+          LOGGER.info(websiteLine);
+          LOGGER.info("╠══════════════════════════════════════════════════════════════╣");
           
           // Initialize CrafterAuthHandler after successful API initialization
           this.crafterAuthHandler = new CrafterAuthHandler(this.crafterAPIClient, LOGGER);
           LOGGER.info("CrafterAuthHandler initialized successfully");
         } else {
-          LOGGER.error("Failed to initialize Crafter CMS API");
-          LOGGER.error("Please check your API configuration and license key");
+          // Print error banner for failed initialization
+          LOGGER.error("╔════════════════════════════════════════════════════════════╗");
+          LOGGER.error("║                    ⚠️  HATA / ERROR  ⚠️                     ║");
+          LOGGER.error("╠════════════════════════════════════════════════════════════╣");
+          LOGGER.error("║  Crafter CMS API başlatılamadı!                           ║");
+          LOGGER.error("║  Crafter CMS API could not be initialized!                ║");
+          LOGGER.error("╠════════════════════════════════════════════════════════════╣");
+          LOGGER.error("║  Lütfen kontrol edin:                                     ║");
+          LOGGER.error("║  • API URL doğru mu?                                       ║");
+          LOGGER.error("║  • Lisans anahtarı (LICENSE_KEY) geçerli mi?              ║");
+          LOGGER.error("║  • API Secret doğru mu?                                    ║");
+          LOGGER.error("║  • İnternet bağlantınız çalışıyor mu?                     ║");
+          LOGGER.error("╚════════════════════════════════════════════════════════════╝");
         }
       }).exceptionally(throwable -> {
         LOGGER.error("Exception during Crafter CMS API initialization: " + throwable.getMessage(), throwable);

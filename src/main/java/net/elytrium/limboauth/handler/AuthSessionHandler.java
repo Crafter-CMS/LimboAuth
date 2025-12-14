@@ -53,10 +53,10 @@ import net.elytrium.limboauth.model.SQLRuntimeException;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import net.elytrium.limboauth.dependencies.DatabaseLibrary;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import net.elytrium.limboauth.dependencies.DatabaseLibrary;
 
 public class AuthSessionHandler implements LimboSessionHandler {
 
