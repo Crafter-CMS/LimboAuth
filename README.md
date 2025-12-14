@@ -1,7 +1,5 @@
 # CrafterAuth
 
-**CrafterAuth** - Gelişmiş Minecraft Velocity Kimlik Doğrulama Sistemi
-
 > 🔗 Bu proje [Elytrium/LimboAuth](https://github.com/Elytrium/LimboAuth)'un bir forkudur.
 
 ## 📋 Hakkında
