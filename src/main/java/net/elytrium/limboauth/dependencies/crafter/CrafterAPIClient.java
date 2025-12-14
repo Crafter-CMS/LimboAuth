@@ -232,7 +232,7 @@ public class CrafterAPIClient {
     try {
       JsonObject requestBody = new JsonObject();
       requestBody.addProperty("username", username);
-      requestBody.addProperty("email", username + "@temp.com");
+      requestBody.addProperty("email", email);
       requestBody.addProperty("password", password);
       requestBody.addProperty("confirm_password", passwordConfirm);
 

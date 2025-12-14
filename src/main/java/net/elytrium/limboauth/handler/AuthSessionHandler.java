@@ -220,8 +220,22 @@ public class AuthSessionHandler implements LimboSessionHandler {
     if (args.length != 0 && this.checkArgsLength(args.length)) {
       Command command = Command.parse(args[0]);
       if (command == Command.REGISTER && !this.totpState && this.playerInfo == null) {
+        // Need 3 arguments: register, password, email
+        if (args.length < 3) {
+          this.proxyPlayer.sendMessage(Component.text("§cUsage: /register <password> <email>"));
+          return;
+        }
+        
         String password = args[1];
-        if (this.checkPasswordsRepeat(args) && this.checkPasswordLength(password) && this.checkPasswordStrength(password)) {
+        String email = args[2];
+        
+        // Validate email format
+        if (!email.contains("@")) {
+          this.proxyPlayer.sendMessage(Component.text("§cGeçersiz email adresi! | Invalid email address!"));
+          return;
+        }
+        
+        if (this.checkPasswordsRepeat(new String[]{args[0], args[1], args[1]}) && this.checkPasswordLength(password) && this.checkPasswordStrength(password)) {
           this.saveTempPassword(password);
           
           // For Crafter CMS, we need to handle registration differently
@@ -239,7 +253,6 @@ public class AuthSessionHandler implements LimboSessionHandler {
           } else {
             // Crafter CMS registration - use the API to register the user
             String ipAddress = this.proxyPlayer.getRemoteAddress().getAddress().getHostAddress();
-            String email = ""; // You might want to get this from the player or make it configurable
             
             // Get the plugin instance to access CrafterAuthHandler
             LimboAuth plugin = (LimboAuth) this.plugin;
@@ -507,16 +520,25 @@ public class AuthSessionHandler implements LimboSessionHandler {
   }
 
   public void finishLogin() {
-    this.proxyPlayer.sendMessage(loginSuccessful);
+    // Send success message first
+    this.proxyPlayer.sendMessage(Component.text("§a✓ Şifre Doğru! | Password Correct!"));
+    
+    // Show title if configured
     if (loginSuccessfulTitle != null) {
       this.proxyPlayer.showTitle(loginSuccessfulTitle);
     }
 
     this.plugin.clearBruteforceAttempts(this.proxyPlayer.getRemoteAddress().getAddress());
 
-    this.plugin.getServer().getEventManager()
-        .fire(new PostAuthorizationEvent(this::finishAuth, this.player, this.playerInfo, this.tempPassword))
-        .thenAcceptAsync(this::finishAuth);
+    // Schedule delayed login after 3 seconds
+    this.plugin.getServer().getScheduler()
+        .buildTask(this.plugin, () -> {
+          this.plugin.getServer().getEventManager()
+              .fire(new PostAuthorizationEvent(this::finishAuth, this.player, this.playerInfo, this.tempPassword))
+              .thenAcceptAsync(this::finishAuth);
+        })
+        .delay(3, TimeUnit.SECONDS)
+        .schedule();
   }
 
   private void finishAuth(TaskEvent event) {

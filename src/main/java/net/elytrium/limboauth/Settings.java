@@ -55,7 +55,7 @@ public class Settings extends YamlConfig {
       "GSON_COLOR_DOWNSAMPLING - Same as GSON, but uses downsampling."
   })
   public Serializers SERIALIZER = Serializers.LEGACY_AMPERSAND;
-  public String PREFIX = "LimboAuth &6>>&f";
+  public String PREFIX = "&b&l[ᴄʀᴀꜰᴛᴇʀ] &7&b►&f";
 
   @Create
   public MAIN MAIN;
@@ -70,7 +70,7 @@ public class Settings extends YamlConfig {
     public BossBar.Color BOSSBAR_COLOR = BossBar.Color.RED;
     @Comment("Available overlays: PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20")
     public BossBar.Overlay BOSSBAR_OVERLAY = BossBar.Overlay.NOTCHED_20;
-    public int MIN_PASSWORD_LENGTH = 4;
+    public int MIN_PASSWORD_LENGTH = 8;
     @Comment("Max password length for the BCrypt hashing algorithm, which is used in this plugin, can't be higher than 71. You can set a lower value than 71.")
     public int MAX_PASSWORD_LENGTH = 71;
     public boolean CHECK_PASSWORD_STRENGTH = true;
@@ -91,11 +91,11 @@ public class Settings extends YamlConfig {
     @Comment("Needs floodgate plugin if disabled.")
     public boolean FLOODGATE_NEED_AUTH = true;
     @Comment("TOTALLY disables hybrid auth feature")
-    public boolean FORCE_OFFLINE_MODE = false;
+    public boolean FORCE_OFFLINE_MODE = true;
     @Comment("Forces all players to get offline uuid")
-    public boolean FORCE_OFFLINE_UUID = false;
+    public boolean FORCE_OFFLINE_UUID = true;
     @Comment("If enabled, the plugin will firstly check whether the player is premium through the local database, and secondly through Mojang API.")
-    public boolean CHECK_PREMIUM_PRIORITY_INTERNAL = true;
+    public boolean CHECK_PREMIUM_PRIORITY_INTERNAL = false;
     @Comment("Delay in milliseconds before sending auth-confirming titles and messages to the player. (login-premium-title, login-floodgate, etc.)")
     public int PREMIUM_AND_FLOODGATE_MESSAGES_DELAY = 1250;
     @Comment({
@@ -107,7 +107,7 @@ public class Settings extends YamlConfig {
         "Saves in the database the accounts of premium users whose login is via online-mode-need-auth: false",
         "Can be disabled to reduce the size of stored data in the database"
     })
-    public boolean SAVE_PREMIUM_ACCOUNTS = true;
+    public boolean SAVE_PREMIUM_ACCOUNTS = false;
     public boolean ENABLE_TOTP = true;
     public boolean TOTP_NEED_PASSWORD = true;
     public boolean REGISTER_NEED_REPEAT_PASSWORD = true;
@@ -231,8 +231,8 @@ public class Settings extends YamlConfig {
     })
     public boolean ON_SERVER_ERROR_PREMIUM = true;
 
-    public List<String> REGISTER_COMMAND = List.of("/r", "/reg", "/register");
-    public List<String> LOGIN_COMMAND = List.of("/l", "/log", "/login");
+    public List<String> REGISTER_COMMAND = List.of("/r", "/reg", "/register", "/kayit");
+    public List<String> LOGIN_COMMAND = List.of("/l", "/log", "/login", "/giris");
     public List<String> TOTP_COMMAND = List.of("/2fa", "/totp");
 
     @Comment("New players will be kicked with registrations-disabled-kick message")
@@ -273,10 +273,10 @@ public class Settings extends YamlConfig {
 
     public static class AUTH_COORDS {
 
-      public double X = 0;
-      public double Y = 0;
-      public double Z = 0;
-      public double YAW = 0;
+      public double X = 47.5;
+      public double Y = 43.0;
+      public double Z = 61.5;
+      public double YAW = 180;
       public double PITCH = 0;
     }
 
@@ -286,9 +286,9 @@ public class Settings extends YamlConfig {
     public static class CRACKED_TITLE_SETTINGS {
 
       public int FADE_IN = 10;
-      public int STAY = 70;
-      public int FADE_OUT = 20;
-      public boolean CLEAR_AFTER_LOGIN = false;
+      public int STAY = 120;
+      public int FADE_OUT = 40; 
+      public boolean CLEAR_AFTER_LOGIN = true;
 
       public Title.Times toTimes() {
         return Title.Times.times(Ticks.duration(this.FADE_IN), Ticks.duration(this.STAY), Ticks.duration(this.FADE_OUT));
@@ -386,123 +386,123 @@ public class Settings extends YamlConfig {
 
     public static class STRINGS {
 
-      public String RELOAD = "{PRFX} &aReloaded successfully!";
-      public String ERROR_OCCURRED = "{PRFX} &cAn internal error has occurred!";
-      public String RATELIMITED = "{PRFX} &cPlease wait before next usage!";
-      public String DATABASE_ERROR_KICK = "{PRFX} &cA database error has occurred!";
+      public String RELOAD = "{PRFX} &aBaşarıyla yeniden yüklendi!";
+      public String ERROR_OCCURRED = "{PRFX} &cBir iç hata meydana geldi!";
+      public String RATELIMITED = "{PRFX} &cLütfen bir sonraki kullanım için bekleyin!";
+      public String DATABASE_ERROR_KICK = "{PRFX} &cBir veritabanı hatası meydana geldi!";
 
-      public String NOT_PLAYER = "{PRFX} &cСonsole is not allowed to execute this command!";
-      public String NOT_REGISTERED = "{PRFX} &cYou are not registered or your account is &6PREMIUM!";
-      public String CRACKED_COMMAND = "{PRFX}{NL}&aYou can not use this command since your account is &6PREMIUM&a!";
-      public String WRONG_PASSWORD = "{PRFX} &cPassword is wrong!";
+      public String NOT_PLAYER = "{PRFX} &cKonsol bu komutu çalıştıramaz!";
+      public String NOT_REGISTERED = "{PRFX} &cKayıtlı değilsiniz veya hesabınız &6PREMIUM&c!";
+      public String CRACKED_COMMAND = "{PRFX}{NL}&aBu komutu kullanamazsınız çünkü hesabınız &6PREMIUM&a!";
+      public String WRONG_PASSWORD = "{PRFX} &cŞifre yanlış!";
 
-      public String NICKNAME_INVALID_KICK = "{PRFX}{NL}&cYour nickname contains forbidden characters. Please, change your nickname!";
-      public String RECONNECT_KICK = "{PRFX}{NL}&cReconnect to the server to verify your account!";
+      public String NICKNAME_INVALID_KICK = "{PRFX}{NL}&cKullanıcı adınız yasaklı karakterler içeriyor. Lütfen kullanıcı adınızı değiştirin!";
+      public String RECONNECT_KICK = "{PRFX}{NL}&cHesabınızı doğrulamak için sunucuya yeniden bağlanın!";
 
       @Comment("6 hours by default in ip-limit-valid-time")
-      public String IP_LIMIT_KICK = "{PRFX}{NL}{NL}&cYour IP has reached max registered accounts. If this is an error, restart your router, or wait about 6 hours.";
-      public String WRONG_NICKNAME_CASE_KICK = "{PRFX}{NL}&cYou should join using username &6{0}&c, not &6{1}&c.";
+      public String IP_LIMIT_KICK = "{PRFX}{NL}{NL}&cIP'niz maksimum kayıtlı hesap sayısına ulaştı. Bu bir hata ise, yönlendiricinizi yeniden başlatın veya yaklaşık 6 saat bekleyin.";
+      public String WRONG_NICKNAME_CASE_KICK = "{PRFX}{NL}&cKullanıcı adı &6{0}&c ile giriş yapmalısınız, &6{1}&c ile değil.";
 
-      public String BOSSBAR = "{PRFX} You have &6{0} &fseconds left to log in.";
-      public String TIMES_UP = "{PRFX}{NL}&cAuthorization time is up.";
+      public String BOSSBAR = "&7Giriş yapmak için &b{0} &7saniyeniz kaldı.";
+      public String TIMES_UP = "{PRFX} &cSüreniz doldu, tekrardan bağlanın.";
 
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_PREMIUM = "{PRFX} You've been logged in automatically using the premium account!";
+      public String LOGIN_PREMIUM = "{PRFX} Premium hesap ile otomatik olarak giriş yaptınız!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_PREMIUM_TITLE = "{PRFX} Welcome!";
+      public String LOGIN_PREMIUM_TITLE = "{PRFX} Hoşgeldiniz!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_PREMIUM_SUBTITLE = "&aYou have been logged in as premium player!";
+      public String LOGIN_PREMIUM_SUBTITLE = "&aPremium oyuncu olarak giriş yaptınız!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_FLOODGATE = "{PRFX} You've been logged in automatically using the bedrock account!";
+      public String LOGIN_FLOODGATE = "{PRFX} Bedrock hesabı ile otomatik olarak giriş yaptınız!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_FLOODGATE_TITLE = "{PRFX} Welcome!";
+      public String LOGIN_FLOODGATE_TITLE = "{PRFX} Hoşgeldiniz!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_FLOODGATE_SUBTITLE = "&aYou have been logged in as bedrock player!";
+      public String LOGIN_FLOODGATE_SUBTITLE = "&aBedrock oyuncusu olarak giriş yaptınız!";
 
-      public String LOGIN = "{PRFX} &aPlease, login using &6/login <password>&a, you have &6{0} &aattempts.";
-      public String LOGIN_WRONG_PASSWORD = "{PRFX} &cYou''ve entered the wrong password, you have &6{0} &cattempts left.";
-      public String LOGIN_WRONG_PASSWORD_KICK = "{PRFX}{NL}&cYou've entered the wrong password numerous times!";
-      public String LOGIN_SUCCESSFUL = "{PRFX} &aSuccessfully logged in!";
+      public String LOGIN = "{PRFX} &b/giris <şifre>&7 komutunu kullanarak giriş yapın.";
+      public String LOGIN_WRONG_PASSWORD = "{PRFX} &cYanlış şifre girdiniz, &6{0} &cşansınız kaldı.";
+      public String LOGIN_WRONG_PASSWORD_KICK = "{PRFX}{NL}&cYanlış şifreyi birçok kez girdiniz!";
+      public String LOGIN_SUCCESSFUL = "{PRFX} &aBaşarıyla giriş yaptınız!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_TITLE = "&fPlease, login using &6/login <password>&a.";
+      public String LOGIN_TITLE = "&b&l[ᴄʀᴀꜰᴛᴇʀ]";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_SUBTITLE = "&aYou have &6{0} &aattempts.";
+      public String LOGIN_SUBTITLE = "&7Giriş yapın, &b{0} &7hakkınız kaldı.";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_SUCCESSFUL_TITLE = "{PRFX}";
+      public String LOGIN_SUCCESSFUL_TITLE = "&a&l✔";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String LOGIN_SUCCESSFUL_SUBTITLE = "&aSuccessfully logged in!";
+      public String LOGIN_SUCCESSFUL_SUBTITLE = "&aBaşarıyla giriş yaptınız!";
 
       @Comment("Or if register-need-repeat-password set to false remove the \"<repeat password>\" part.")
-      public String REGISTER = "{PRFX} Please, register using &6/register <password> <repeat password>";
-      public String REGISTER_DIFFERENT_PASSWORDS = "{PRFX} &cThe entered passwords differ from each other!";
-      public String REGISTER_PASSWORD_TOO_SHORT = "{PRFX} &cYou entered a too short password, use a different one!";
-      public String REGISTER_PASSWORD_TOO_LONG = "{PRFX} &cYou entered a too long password, use a different one!";
-      public String REGISTER_PASSWORD_UNSAFE = "{PRFX} &cYour password is unsafe, use a different one!";
-      public String REGISTER_SUCCESSFUL = "{PRFX} &aSuccessfully registered!";
+      public String REGISTER = "{PRFX} &b/kayit <şifre> <mail> &7 komutunu kullanarak kayıt olun";
+      public String REGISTER_DIFFERENT_PASSWORDS = "{PRFX} &cGirilen şifreler birbirinden farklı!";
+      public String REGISTER_PASSWORD_TOO_SHORT = "{PRFX} &cGirdiğiniz şifre çok kısa, farklı bir şifre kullanın!";
+      public String REGISTER_PASSWORD_TOO_LONG = "{PRFX} &cGirdiğiniz şifre çok uzun, farklı bir şifre kullanın!";
+      public String REGISTER_PASSWORD_UNSAFE = "{PRFX} &cŞifreniz güvensiz, farklı bir şifre kullanın!";
+      public String REGISTER_SUCCESSFUL = "{PRFX} &aBaşarıyla kayıt oldunuz!";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String REGISTER_TITLE = "{PRFX}";
+      public String REGISTER_TITLE = "&b&l[ᴄʀᴀꜰᴛᴇʀ]";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String REGISTER_SUBTITLE = "&aPlease, register using &6/register <password> <repeat password>";
+      public String REGISTER_SUBTITLE = "&b/kayit <şifre> <mail>&7 komutunu kullanarak kayıt olun";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
       public String REGISTER_SUCCESSFUL_TITLE = "{PRFX}";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String REGISTER_SUCCESSFUL_SUBTITLE = "&aSuccessfully registered!";
+      public String REGISTER_SUCCESSFUL_SUBTITLE = "&aBaşarıyla kayıt oldunuz!";
 
-      public String UNREGISTER_SUCCESSFUL = "{PRFX}{NL}&aSuccessfully unregistered!";
-      public String UNREGISTER_USAGE = "{PRFX} Usage: &6/unregister <current password> confirm";
+      public String UNREGISTER_SUCCESSFUL = "{PRFX}{NL}&aBaşarıyla kaydınız silindi!";
+      public String UNREGISTER_USAGE = "{PRFX} Kullanım: &6/unregister <mevcut şifre> onayla";
 
-      public String PREMIUM_SUCCESSFUL = "{PRFX}{NL}&aSuccessfully changed account state to &6PREMIUM&a!";
-      public String ALREADY_PREMIUM = "{PRFX} &cYour account is already &6PREMIUM&c!";
-      public String NOT_PREMIUM = "{PRFX} &cYour account is not &6PREMIUM&c!";
-      public String PREMIUM_USAGE = "{PRFX} Usage: &6/premium <current password> confirm";
+      public String PREMIUM_SUCCESSFUL = "{PRFX}{NL}&aHesap durumu &6PREMIUM&a olarak başarıyla değiştirildi!";
+      public String ALREADY_PREMIUM = "{PRFX} &cHesabınız zaten &6PREMIUM&c!";
+      public String NOT_PREMIUM = "{PRFX} &cHesabınız &6PREMIUM&c değil!";
+      public String PREMIUM_USAGE = "{PRFX} Kullanım: &6/premium <mevcut şifre> onayla";
 
-      public String EVENT_CANCELLED = "{PRFX} Authorization event was cancelled";
+      public String EVENT_CANCELLED = "{PRFX} Yetkilendirme olayı iptal edildi";
 
-      public String FORCE_UNREGISTER_SUCCESSFUL = "{PRFX} &6{0} &asuccessfully unregistered!";
-      public String FORCE_UNREGISTER_KICK = "{PRFX}{NL}&aYou have been unregistered by an administrator!";
-      public String FORCE_UNREGISTER_NOT_SUCCESSFUL = "{PRFX} &cUnable to unregister &6{0}&c. Most likely this player has never been on this server.";
-      public String FORCE_UNREGISTER_USAGE = "{PRFX} Usage: &6/forceunregister <nickname>";
+      public String FORCE_UNREGISTER_SUCCESSFUL = "{PRFX} &6{0} &aBaşarıyla kaydınız silindi!";
+      public String FORCE_UNREGISTER_KICK = "{PRFX}{NL}&aYönetici tarafından kaydınız silindi!";
+      public String FORCE_UNREGISTER_NOT_SUCCESSFUL = "{PRFX} &c&6{0}&c için kaydınız silinemedi. Bu oyuncunun bu sunucuda hiç bulunmamış olması muhtemeldir.";
+      public String FORCE_UNREGISTER_USAGE = "{PRFX} Kullanım: &6/forceunregister <takma ad>";
 
-      public String REGISTRATIONS_DISABLED_KICK = "{PRFX} Registrations are currently disabled.";
+      public String REGISTRATIONS_DISABLED_KICK = "{PRFX} Kayıtlar şu anda devre dışı.";
 
-      public String CHANGE_PASSWORD_SUCCESSFUL = "{PRFX} &aSuccessfully changed password!";
+      public String CHANGE_PASSWORD_SUCCESSFUL = "{PRFX} &aŞifre başarıyla değiştirildi!";
       @Comment("Or if change-password-need-old-pass set to false remove the \"<old password>\" part.")
-      public String CHANGE_PASSWORD_USAGE = "{PRFX} Usage: &6/changepassword <old password> <new password>";
+      public String CHANGE_PASSWORD_USAGE = "{PRFX} Kullanım: &6/changepassword <eski şifre> <yeni şifre>";
 
-      public String FORCE_CHANGE_PASSWORD_SUCCESSFUL = "{PRFX} &aSuccessfully changed password for player &6{0}&a!";
-      public String FORCE_CHANGE_PASSWORD_MESSAGE = "{PRFX} &aYour password has been changed to &6{0} &aby an administator!";
-      public String FORCE_CHANGE_PASSWORD_NOT_SUCCESSFUL = "{PRFX} &cUnable to change password for &6{0}&c. Most likely this player has never been on this server.";
-      public String FORCE_CHANGE_PASSWORD_NOT_REGISTERED = "{PRFX} &cPlayer &6{0}&c is not registered.";
-      public String FORCE_CHANGE_PASSWORD_USAGE = "{PRFX} Usage: &6/forcechangepassword <nickname> <new password>";
+      public String FORCE_CHANGE_PASSWORD_SUCCESSFUL = "{PRFX} &aOyuncunun şifresi başarıyla &6{0}&a olarak değiştirildi!";
+      public String FORCE_CHANGE_PASSWORD_MESSAGE = "{PRFX} &aŞifreniz &6{0}&a olarak yönetici tarafından değiştirildi!";
+      public String FORCE_CHANGE_PASSWORD_NOT_SUCCESSFUL = "{PRFX} &c&6{0}&c için şifre değiştirilemedi. Bu oyuncunun bu sunucuda hiç bulunmamış olması muhtemeldir.";
+      public String FORCE_CHANGE_PASSWORD_NOT_REGISTERED = "{PRFX} &cOyuncu &6{0}&c kayıtlı değil.";
+      public String FORCE_CHANGE_PASSWORD_USAGE = "{PRFX} Kullanım: &6/forcechangepassword <takma ad> <yeni şifre>";
 
-      public String FORCE_REGISTER_USAGE = "{PRFX} Usage: &6/forceregister <nickname> <password>";
-      public String FORCE_REGISTER_INCORRECT_NICKNAME = "{PRFX} &cNickname contains forbidden characters.";
-      public String FORCE_REGISTER_TAKEN_NICKNAME = "{PRFX} &cThis nickname is already taken.";
-      public String FORCE_REGISTER_SUCCESSFUL = "{PRFX} &aSuccessfully registered player &6{0}&a!";
-      public String FORCE_REGISTER_NOT_SUCCESSFUL = "{PRFX} &cUnable to register player &6{0}&c.";
+      public String FORCE_REGISTER_USAGE = "{PRFX} Kullanım: &6/forceregister <takma ad> <şifre>";
+      public String FORCE_REGISTER_INCORRECT_NICKNAME = "{PRFX} &cTakma ad yasaklı karakterler içeriyor.";
+      public String FORCE_REGISTER_TAKEN_NICKNAME = "{PRFX} &cBu takma ad zaten alınmış.";
+      public String FORCE_REGISTER_SUCCESSFUL = "{PRFX} &aOyuncu &6{0}&a başarıyla kayıt edildi!";
+      public String FORCE_REGISTER_NOT_SUCCESSFUL = "{PRFX} &cOyuncu &6{0}&c kayıt edilemedi.";
 
-      public String FORCE_LOGIN_USAGE = "{PRFX} Usage: &6/forcelogin <nickname>";
-      public String FORCE_LOGIN_SUCCESSFUL = "{PRFX} &aSuccessfully authenticated &6{0}&a!";
-      public String FORCE_LOGIN_UNKNOWN_PLAYER = "{PRFX} &cUnable to find authenticating player with username &6{0}&a!";
+      public String FORCE_LOGIN_USAGE = "LimboAuth &6>>&f Usage: &6/forcelogin <nickname>";
+      public String FORCE_LOGIN_SUCCESSFUL = "LimboAuth &6>>&f &aSuccessfully authenticated &6{0}&a!";
+      public String FORCE_LOGIN_UNKNOWN_PLAYER = "LimboAuth &6>>&f &cUnable to find authenticating player with username &6{0}&a!";
 
-      public String TOTP = "{PRFX} Please, enter your 2FA key using &6/2fa <key>";
+      public String TOTP = "{PRFX} Lütfen 2FA anahtarınızı &6/2fa <anahtar>&6 komutunu kullanarak girin";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
       public String TOTP_TITLE = "{PRFX}";
       @Comment(value = "Can be empty.", at = Comment.At.SAME_LINE)
-      public String TOTP_SUBTITLE = "&aEnter your 2FA key using &6/2fa <key>";
-      public String TOTP_SUCCESSFUL = "{PRFX} &aSuccessfully enabled 2FA!";
-      public String TOTP_DISABLED = "{PRFX} &aSuccessfully disabled 2FA!";
+      public String TOTP_SUBTITLE = "&a2FA anahtarınızı &6/2fa <anahtar>&a komutunu kullanarak girin";
+      public String TOTP_SUCCESSFUL = "{PRFX} &a2FA başarıyla etkinleştirildi!";
+      public String TOTP_DISABLED = "{PRFX} &a2FA başarıyla devre dışı bırakıldı!";
       @Comment("Or if totp-need-pass set to false remove the \"<current password>\" part.")
-      public String TOTP_USAGE = "{PRFX} Usage: &6/2fa enable <current password>&f or &6/2fa disable <totp key>&f.";
-      public String TOTP_WRONG = "{PRFX} &cWrong 2FA key!";
-      public String TOTP_ALREADY_ENABLED = "{PRFX} &c2FA is already enabled. Disable it using &6/2fa disable <key>&c.";
-      public String TOTP_QR = "{PRFX} Click here to open 2FA QR code in browser.";
-      public String TOTP_TOKEN = "{PRFX} &aYour 2FA token &7(Click to copy)&a: &6{0}";
-      public String TOTP_RECOVERY = "{PRFX} &aYour recovery codes &7(Click to copy)&a: &6{0}";
+      public String TOTP_USAGE = "{PRFX} Kullanım: &6/2fa enable <mevcut şifre>&f veya &6/2fa disable <totp anahtar>&f.";
+      public String TOTP_WRONG = "{PRFX} &cYanlış 2FA anahtarı!";
+      public String TOTP_ALREADY_ENABLED = "{PRFX} &c2FA zaten etkinleştirilmiş. &6/2fa disable <anahtar>&c komutunu kullanarak devre dışı bırakabilirsiniz.";
+      public String TOTP_QR = "{PRFX} Tarayıcıda 2FA QR kodunu açmak için buraya tıklayın.";
+      public String TOTP_TOKEN = "{PRFX} &a2FA tokenınız &7(Tıklayıp kopyalayın)&a: &6{0}";
+      public String TOTP_RECOVERY = "{PRFX} &aKurtarma kodlarınız &7(Tıklayıp kopyalayın)&a: &6{0}";
 
-      public String DESTROY_SESSION_SUCCESSFUL = "{PRFX} &eYour session is now destroyed, you'll need to log in again after reconnecting.";
+      public String DESTROY_SESSION_SUCCESSFUL = "{PRFX} &eOturumunuz şimdi yok edildi, yeniden bağlandıktan sonra tekrar giriş yapmanız gerekecek.";
 
-      public String MOD_SESSION_EXPIRED = "{PRFX} Your session has expired, log in again.";
+      public String MOD_SESSION_EXPIRED = "{PRFX} Oturumunuz süresi doldu, tekrar giriş yapın.";
     }
   }
 
@@ -522,10 +522,17 @@ public class Settings extends YamlConfig {
     public String DATABASE = "limboauth";
     public String CONNECTION_PARAMETERS = "?autoReconnect=true&initialTimeout=1&useSSL=false";
 
-    @Comment("Settings for Crafter CMS: ")
+    @Comment("Crafter CMS: [API URL değiştirmeyiniz.]")
     public String API_URL = "https://api.crafter.net.tr";
-    public String LICENSE_KEY = "your-api-key";
-    public String API_SECRET = "your-api-secret";
+
+    @Comment("Crafter CMS üzerinden aldığınız license anahtarınızı girin.")
+    public String LICENSE_KEY = "ornek-lisans-anahtarı";
+
+    @Comment({
+      "Sitenizin yönetim panelinden Ayarlar-Güvenlik sekmesinden Crafter Connect Plugin Aktif işaretleyin ve Kaydedin.",
+      "Ardından Plugin Secret Key kopyalayarak buraya yapıştırınız."
+    })
+    public String API_SECRET = "crafter_secretkeyblabla123";
   }
 
   public static class MD5KeySerializer extends ConfigSerializer<byte[], String> {
