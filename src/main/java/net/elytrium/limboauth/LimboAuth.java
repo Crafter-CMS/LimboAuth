@@ -125,6 +125,7 @@ import org.bstats.velocity.Metrics;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Plugin(
     id = "limboauth",
@@ -197,13 +198,18 @@ public class LimboAuth {
 
   @Inject
   public LimboAuth(Logger logger, ProxyServer server, Metrics.Factory metricsFactory, @DataDirectory Path dataDirectory) {
-    setLogger(logger);
+    File crafterDir = new File(dataDirectory.toFile().getParentFile(), "CrafterAuth");
+    if (!crafterDir.exists() && !crafterDir.mkdirs()) {
+      throw new IllegalStateException("Unable to create CrafterAuth data directory");
+    }
+
+    setLogger(LoggerFactory.getLogger("crafterauth"));
 
     this.server = server;
     this.metricsFactory = metricsFactory;
-    this.dataDirectory = dataDirectory;
+    this.dataDirectory = crafterDir.toPath();
 
-    this.dataDirectoryFile = dataDirectory.toFile();
+    this.dataDirectoryFile = crafterDir;
     this.configFile = new File(this.dataDirectoryFile, "config.yml");
 
     this.authenticatingPlayers = new ConcurrentHashMap<>();

@@ -10,7 +10,31 @@ plugins {
 }
 
 setGroup("net.elytrium")
-setVersion("1.1.14")
+
+def versionFile = file("VERSION")
+def currentVersion = versionFile.text.trim()
+setVersion(currentVersion)
+
+def incrementPatch = { String version ->
+    def parts = version.tokenize('.')
+    while (parts.size() < 3) {
+        parts << '0'
+    }
+    def patch = (parts[2] as int) + 1
+    return "${parts[0]}.${parts[1]}.${patch}"
+}
+
+tasks.register("bumpPatchVersion") {
+    doLast {
+        versionFile.text = incrementPatch(currentVersion) + System.lineSeparator()
+    }
+}
+
+tasks.named("build") { finalizedBy("bumpPatchVersion") }
+
+base {
+    archivesName = "crafterauth"
+}
 
 java {
     setSourceCompatibility(JavaVersion.VERSION_17)
@@ -70,6 +94,7 @@ dependencies {
 }
 
 shadowJar {
+    archiveBaseName.set("crafterauth")
     getArchiveClassifier().set("")
 
     exclude("META-INF/licenses/**")
