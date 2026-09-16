@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
@@ -52,14 +53,14 @@ public class PremiumCommand extends RatelimitedCommand {
 
     Serializer serializer = LimboAuth.getSerializer();
     this.confirmKeyword = Settings.IMP.MAIN.CONFIRM_KEYWORD;
-    this.notRegistered = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_REGISTERED);
-    this.alreadyPremium = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ALREADY_PREMIUM);
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.PREMIUM_SUCCESSFUL);
-    this.errorOccurred = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
-    this.notPremium = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PREMIUM);
-    this.wrongPassword = serializer.deserialize(Settings.IMP.MAIN.STRINGS.WRONG_PASSWORD);
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.PREMIUM_USAGE);
-    this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
+    this.notRegistered = serializer.deserialize(Messages.IMP.GENERAL.NOT_REGISTERED);
+    this.alreadyPremium = serializer.deserialize(Messages.IMP.COMMANDS.ALREADY_PREMIUM);
+    this.successful = serializer.deserialize(Messages.IMP.COMMANDS.PREMIUM_SUCCESSFUL);
+    this.errorOccurred = serializer.deserialize(Messages.IMP.GENERAL.ERROR_OCCURRED);
+    this.notPremium = serializer.deserialize(Messages.IMP.COMMANDS.NOT_PREMIUM);
+    this.wrongPassword = serializer.deserialize(Messages.IMP.GENERAL.WRONG_PASSWORD);
+    this.usage = serializer.deserialize(Messages.IMP.COMMANDS.PREMIUM_USAGE);
+    this.notPlayer = serializer.deserialize(Messages.IMP.GENERAL.NOT_PLAYER);
   }
 
   @Override

@@ -22,6 +22,7 @@ import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.kyori.adventure.text.Component;
 
@@ -36,8 +37,8 @@ public class DestroySessionCommand extends RatelimitedCommand {
     this.plugin = plugin;
 
     Serializer serializer = LimboAuth.getSerializer();
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.DESTROY_SESSION_SUCCESSFUL);
-    this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
+    this.successful = serializer.deserialize(Messages.IMP.COMMANDS.DESTROY_SESSION_SUCCESSFUL);
+    this.notPlayer = serializer.deserialize(Messages.IMP.GENERAL.NOT_PLAYER);
   }
 
   @Override

@@ -17,8 +17,8 @@
 
 package net.elytrium.limboauth.dependencies.crafter;
 
-import com.velocitypowered.api.proxy.Player;
 import java.util.concurrent.CompletableFuture;
+import net.elytrium.limboauth.dependencies.crafter.model.CrafterResponse;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 import org.slf4j.Logger;
 
@@ -38,22 +38,22 @@ public class CrafterAuthHandler {
    * Check if a user exists in Crafter CMS.
    *
    * @param username The username to check
+   * @param ipAddress The player IP address
    * @return CompletableFuture that completes with user info or null if not found
    */
-  public CompletableFuture<RegisteredPlayer> checkUserExists(String username) {
+  public CompletableFuture<RegisteredPlayer> checkUserExists(String username, String ipAddress) {
     if (!this.apiClient.isInitialized()) {
       this.logger.warn("Crafter CMS API not initialized, cannot check user existence");
       return CompletableFuture.completedFuture(null);
     }
 
-    return this.apiClient.checkUserExists(username)
+    return this.apiClient.checkUserExists(username, ipAddress)
         .thenApply(response -> {
           if (response.isSuccess() && response.hasUserData()) {
             // User exists in Crafter CMS, create a RegisteredPlayer object
-            // Note: This is a simplified approach - you might want to store more user data
             RegisteredPlayer player = new RegisteredPlayer();
             player.setNickname(username); // This also sets lowercase nickname
-            player.setHash(""); // Empty hash indicates premium account
+            player.setHash(""); // Empty hash indicates external account
             player.setPremiumUuid(""); // Will be set when player connects
             return player;
           } else {
@@ -68,32 +68,42 @@ public class CrafterAuthHandler {
   }
 
   /**
+   * Check if a user exists in Crafter CMS without specifying IP.
+   *
+   * @param username The username to check
+   * @return CompletableFuture that completes with user info or null if not found
+   */
+  public CompletableFuture<RegisteredPlayer> checkUserExists(String username) {
+    return this.checkUserExists(username, null);
+  }
+
+  /**
    * Authenticate a user with Crafter CMS.
    *
    * @param username The username
    * @param password The password
    * @param ipAddress The user's IP address for backend IP limit checks
-   * @return CompletableFuture that completes with authentication result
+   * @return CompletableFuture that completes with CrafterResponse
    */
-  public CompletableFuture<Boolean> authenticateUser(String username, String password, String ipAddress) {
+  public CompletableFuture<CrafterResponse> authenticateUser(String username, String password, String ipAddress) {
     if (!this.apiClient.isInitialized()) {
       this.logger.warn("Crafter CMS API not initialized, cannot authenticate user");
-      return CompletableFuture.completedFuture(false);
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
     }
 
     return this.apiClient.signIn(username, password, ipAddress)
         .thenApply(response -> {
           if (response.isSuccess()) {
-            this.logger.info("User {} authenticated successfully via Crafter CMS", username);
-            return true;
+            this.logger.info("User {} authenticated successfully via Crafter CMS (2FA: {}, EmailVerify: {})",
+                username, response.isRequires2FA(), response.isRequiresEmailVerification());
           } else {
             this.logger.warn("User {} authentication failed via Crafter CMS: {}", username, response.getMessage());
-            return false;
           }
+          return response;
         })
         .exceptionally(throwable -> {
           this.logger.error("Error authenticating user via Crafter CMS: " + throwable.getMessage(), throwable);
-          return false;
+          return new CrafterResponse(false, throwable.getMessage());
         });
   }
 
@@ -105,28 +115,107 @@ public class CrafterAuthHandler {
    * @param password The password
    * @param passwordConfirm The password confirmation
    * @param ipAddress The user's IP address for backend IP limit checks
-   * @return CompletableFuture that completes with registration result
+   * @return CompletableFuture that completes with CrafterResponse
    */
-  public CompletableFuture<Boolean> registerUser(String username, String email, String password, String passwordConfirm, String ipAddress) {
+  public CompletableFuture<CrafterResponse> registerUser(String username, String email, String password,
+      String passwordConfirm, String ipAddress) {
     if (!this.apiClient.isInitialized()) {
       this.logger.warn("Crafter CMS API not initialized, cannot register user");
-      return CompletableFuture.completedFuture(false);
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
     }
 
     return this.apiClient.signUp(username, email, password, passwordConfirm, ipAddress)
         .thenApply(response -> {
           if (response.isSuccess()) {
             this.logger.info("User {} registered successfully via Crafter CMS", username);
-            return true;
           } else {
             this.logger.warn("User {} registration failed via Crafter CMS: {}", username, response.getMessage());
-            return false;
           }
+          return response;
         })
         .exceptionally(throwable -> {
           this.logger.error("Error registering user via Crafter CMS: " + throwable.getMessage(), throwable);
-          return false;
+          return new CrafterResponse(false, throwable.getMessage());
         });
+  }
+
+  /**
+   * Verify 2FA code.
+   *
+   * @param tempToken The temp JWT token
+   * @param code The 2FA code
+   * @param method The method
+   * @param ipAddress The player IP
+   * @return The response
+   */
+  public CompletableFuture<CrafterResponse> verify2FA(String tempToken, String code, String method, String ipAddress) {
+    if (!this.apiClient.isInitialized()) {
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
+    }
+    return this.apiClient.verify2FA(tempToken, code, method, ipAddress);
+  }
+
+  /**
+   * Resend 2FA code (via email or discord).
+   *
+   * @param tempToken The temp JWT token
+   * @param method The primary method ('email' or 'discord')
+   * @param ipAddress The player IP
+   * @return The response
+   */
+  public CompletableFuture<CrafterResponse> resend2FACode(String tempToken, String method, String ipAddress) {
+    if (!this.apiClient.isInitialized()) {
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
+    }
+    if ("discord".equalsIgnoreCase(method)) {
+      return this.apiClient.send2FADiscordCode(tempToken, ipAddress);
+    } else {
+      return this.apiClient.send2FAEmailCode(tempToken, ipAddress);
+    }
+  }
+
+  /**
+   * Verify email OTP code during login.
+   *
+   * @param tempToken The temp JWT token
+   * @param code The 6-digit OTP code
+   * @param ipAddress The player IP
+   * @return The response
+   */
+  public CompletableFuture<CrafterResponse> verifyLoginEmail(String tempToken, String code, String ipAddress) {
+    if (!this.apiClient.isInitialized()) {
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
+    }
+    return this.apiClient.verifyLoginEmail(tempToken, code, ipAddress);
+  }
+
+  /**
+   * Resend login email OTP code.
+   *
+   * @param tempToken The temp JWT token
+   * @param ipAddress The player IP
+   * @return The response
+   */
+  public CompletableFuture<CrafterResponse> resendLoginEmail(String tempToken, String ipAddress) {
+    if (!this.apiClient.isInitialized()) {
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
+    }
+    return this.apiClient.resendLoginEmail(tempToken, ipAddress);
+  }
+
+  /**
+   * Update temporary email for in-game registered account.
+   *
+   * @param tempToken The temp JWT token
+   * @param email The new real email address
+   * @param ipAddress The player IP
+   * @return The response
+   */
+  public CompletableFuture<CrafterResponse> updateTempEmail(String tempToken, String email, String ipAddress) {
+    if (!this.apiClient.isInitialized()) {
+      return CompletableFuture.completedFuture(new CrafterResponse(false, "Crafter CMS API not initialized"));
+    }
+    return this.apiClient.updateTempEmail(tempToken, email, ipAddress);
   }
 
   /**

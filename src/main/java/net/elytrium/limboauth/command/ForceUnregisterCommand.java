@@ -28,6 +28,7 @@ import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.commons.velocity.commands.SuggestUtils;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.event.AuthUnregisterEvent;
 import net.elytrium.limboauth.model.RegisteredPlayer;
@@ -51,10 +52,10 @@ public class ForceUnregisterCommand extends RatelimitedCommand {
     this.playerDao = playerDao;
 
     Serializer serializer = LimboAuth.getSerializer();
-    this.kick = serializer.deserialize(Settings.IMP.MAIN.STRINGS.FORCE_UNREGISTER_KICK);
-    this.successful = Settings.IMP.MAIN.STRINGS.FORCE_UNREGISTER_SUCCESSFUL;
-    this.notSuccessful = Settings.IMP.MAIN.STRINGS.FORCE_UNREGISTER_NOT_SUCCESSFUL;
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.FORCE_UNREGISTER_USAGE);
+    this.kick = serializer.deserialize(Messages.IMP.ADMIN.FORCE_UNREGISTER_KICK);
+    this.successful = Messages.IMP.ADMIN.FORCE_UNREGISTER_SUCCESSFUL;
+    this.notSuccessful = Messages.IMP.ADMIN.FORCE_UNREGISTER_NOT_SUCCESSFUL;
+    this.usage = serializer.deserialize(Messages.IMP.ADMIN.FORCE_UNREGISTER_USAGE);
   }
 
   @Override

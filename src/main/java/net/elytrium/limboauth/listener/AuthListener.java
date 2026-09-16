@@ -41,6 +41,7 @@ import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent;
 import net.elytrium.limboauth.LimboAuth;
 import net.elytrium.limboauth.LimboAuth.CachedPremiumUser;
 import net.elytrium.limboauth.LimboAuth.PremiumState;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.floodgate.FloodgateApiHolder;
 import net.elytrium.limboauth.handler.AuthSessionHandler;
@@ -66,7 +67,7 @@ public class AuthListener {
     this.playerDao = playerDao;
     this.floodgateApi = floodgateApi;
 
-    this.errorOccurred = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
+    this.errorOccurred = LimboAuth.getSerializer().deserialize(Messages.IMP.GENERAL.ERROR_OCCURRED);
   }
 
   @Subscribe(order = PostOrder.LATE)

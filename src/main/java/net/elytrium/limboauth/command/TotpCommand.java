@@ -33,6 +33,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
@@ -68,23 +69,23 @@ public class TotpCommand extends RatelimitedCommand {
     this.playerDao = playerDao;
 
     Serializer serializer = LimboAuth.getSerializer();
-    this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_USAGE);
+    this.notPlayer = serializer.deserialize(Messages.IMP.GENERAL.NOT_PLAYER);
+    this.usage = serializer.deserialize(Messages.IMP.TOTP.USAGE);
     this.needPassword = Settings.IMP.MAIN.TOTP_NEED_PASSWORD;
-    this.notRegistered = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_REGISTERED);
-    this.wrongPassword = serializer.deserialize(Settings.IMP.MAIN.STRINGS.WRONG_PASSWORD);
-    this.alreadyEnabled = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_ALREADY_ENABLED);
-    this.errorOccurred = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_SUCCESSFUL);
+    this.notRegistered = serializer.deserialize(Messages.IMP.GENERAL.NOT_REGISTERED);
+    this.wrongPassword = serializer.deserialize(Messages.IMP.GENERAL.WRONG_PASSWORD);
+    this.alreadyEnabled = serializer.deserialize(Messages.IMP.TOTP.ALREADY_ENABLED);
+    this.errorOccurred = serializer.deserialize(Messages.IMP.GENERAL.ERROR_OCCURRED);
+    this.successful = serializer.deserialize(Messages.IMP.TOTP.SUCCESSFUL);
     this.issuer = Settings.IMP.MAIN.TOTP_ISSUER;
     this.qrGeneratorUrl = Settings.IMP.MAIN.QR_GENERATOR_URL;
-    this.qr = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_QR);
-    this.token = Settings.IMP.MAIN.STRINGS.TOTP_TOKEN;
+    this.qr = serializer.deserialize(Messages.IMP.TOTP.QR);
+    this.token = Messages.IMP.TOTP.TOKEN;
     this.recoveryCodesAmount = Settings.IMP.MAIN.TOTP_RECOVERY_CODES_AMOUNT;
-    this.recovery = Settings.IMP.MAIN.STRINGS.TOTP_RECOVERY;
-    this.disabled = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_DISABLED);
-    this.wrong = serializer.deserialize(Settings.IMP.MAIN.STRINGS.TOTP_WRONG);
-    this.crackedCommand = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CRACKED_COMMAND);
+    this.recovery = Messages.IMP.TOTP.RECOVERY;
+    this.disabled = serializer.deserialize(Messages.IMP.TOTP.DISABLED);
+    this.wrong = serializer.deserialize(Messages.IMP.TOTP.WRONG);
+    this.crackedCommand = serializer.deserialize(Messages.IMP.GENERAL.CRACKED_COMMAND);
   }
 
   // TODO: Rewrite.

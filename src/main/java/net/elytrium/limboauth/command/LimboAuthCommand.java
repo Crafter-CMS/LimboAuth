@@ -20,26 +20,19 @@ package net.elytrium.limboauth.command;
 import com.google.common.collect.ImmutableList;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 public class LimboAuthCommand extends RatelimitedCommand {
-
-  private static final List<Component> HELP_MESSAGE = List.of(
-      Component.text("This server is using LimboAuth and LimboAPI.", NamedTextColor.YELLOW),
-      Component.text("(C) 2021 - 2024 Elytrium", NamedTextColor.YELLOW),
-      Component.text("https://elytrium.net/github/", NamedTextColor.GREEN),
-      Component.empty()
-  );
-
-  private static final Component AVAILABLE_SUBCOMMANDS_MESSAGE = Component.text("Available subcommands:", NamedTextColor.WHITE);
-  private static final Component NO_AVAILABLE_SUBCOMMANDS_MESSAGE = Component.text("There is no available subcommands for you.", NamedTextColor.WHITE);
 
   private final LimboAuth plugin;
 
@@ -96,47 +89,51 @@ public class LimboAuthCommand extends RatelimitedCommand {
   }
 
   private void showHelp(CommandSource source) {
-    HELP_MESSAGE.forEach(source::sendMessage);
+    source.sendMessage(Component.text(Messages.IMP.ADMIN.HELP_HEADER, NamedTextColor.YELLOW));
+    source.sendMessage(Component.text(Messages.IMP.ADMIN.HELP_COPYRIGHT, NamedTextColor.YELLOW));
+    source.sendMessage(Component.text(Messages.IMP.ADMIN.HELP_URL, NamedTextColor.GREEN));
+    source.sendMessage(Component.empty());
 
     List<Subcommand> availableSubcommands = Arrays.stream(Subcommand.values())
         .filter(command -> command.hasPermission(source))
         .collect(Collectors.toList());
 
     if (availableSubcommands.size() > 0) {
-      source.sendMessage(AVAILABLE_SUBCOMMANDS_MESSAGE);
+      source.sendMessage(Component.text(Messages.IMP.ADMIN.SUBCOMMANDS_AVAILABLE, NamedTextColor.WHITE));
       availableSubcommands.forEach(command -> source.sendMessage(command.getMessageLine()));
     } else {
-      source.sendMessage(NO_AVAILABLE_SUBCOMMANDS_MESSAGE);
+      source.sendMessage(Component.text(Messages.IMP.ADMIN.SUBCOMMANDS_NONE, NamedTextColor.WHITE));
     }
   }
 
   private enum Subcommand {
-    RELOAD("Reload config.", Settings.IMP.MAIN.COMMAND_PERMISSION_STATE.RELOAD,
+    RELOAD(() -> Messages.IMP.ADMIN.SUBCOMMAND_RELOAD_DESC, Settings.IMP.MAIN.COMMAND_PERMISSION_STATE.RELOAD,
         (LimboAuthCommand parent, CommandSource source, String[] args) -> {
           parent.plugin.reload();
-          source.sendMessage(LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.RELOAD));
+          source.sendMessage(LimboAuth.getSerializer().deserialize(Messages.IMP.GENERAL.RELOAD));
         }),
-    TEST_CRAFTER("Test Crafter CMS API connection.", Settings.IMP.MAIN.COMMAND_PERMISSION_STATE.RELOAD,
+    TEST_CRAFTER(() -> Messages.IMP.ADMIN.SUBCOMMAND_TEST_CRAFTER_DESC, Settings.IMP.MAIN.COMMAND_PERMISSION_STATE.RELOAD,
         (LimboAuthCommand parent, CommandSource source, String[] args) -> {
           if (parent.plugin.getCrafterAPIClient() != null) {
-            source.sendMessage(Component.text("Testing Crafter CMS API connection...", NamedTextColor.YELLOW));
+            source.sendMessage(LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.TEST_CRAFTER_TESTING));
             parent.plugin.getCrafterAPIClient().testConnection().thenAccept(result -> {
-              source.sendMessage(Component.text("Test result: " + result, NamedTextColor.GREEN));
+              source.sendMessage(LimboAuth.getSerializer().deserialize(
+                  MessageFormat.format(Messages.IMP.ADMIN.TEST_CRAFTER_RESULT, result)));
             });
           } else {
-            source.sendMessage(Component.text("Crafter CMS API client is not available.", NamedTextColor.RED));
+            source.sendMessage(LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.TEST_CRAFTER_NOT_AVAILABLE));
           }
         });
 
     private final String command;
-    private final String description;
+    private final Supplier<String> descriptionSupplier;
     private final CommandPermissionState permissionState;
     private final SubcommandExecutor executor;
 
-    Subcommand(String description, CommandPermissionState permissionState, SubcommandExecutor executor) {
+    Subcommand(Supplier<String> descriptionSupplier, CommandPermissionState permissionState, SubcommandExecutor executor) {
       this.permissionState = permissionState;
       this.command = this.name().toLowerCase(Locale.ROOT);
-      this.description = description;
+      this.descriptionSupplier = descriptionSupplier;
       this.executor = executor;
     }
 
@@ -148,7 +145,7 @@ public class LimboAuthCommand extends RatelimitedCommand {
       return Component.textOfChildren(
           Component.text("  /limboauth " + this.command, NamedTextColor.GREEN),
           Component.text(" - ", NamedTextColor.DARK_GRAY),
-          Component.text(this.description, NamedTextColor.YELLOW)
+          Component.text(this.descriptionSupplier.get(), NamedTextColor.YELLOW)
       );
     }
 

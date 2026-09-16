@@ -57,6 +57,14 @@ public class Settings extends YamlConfig {
   public Serializers SERIALIZER = Serializers.LEGACY_AMPERSAND;
   public String PREFIX = "LimboAuth &6>>&f";
 
+  @Comment({
+      "Language to use for all messages.",
+      "Available by default: 'tr' (Turkish), 'en' (English).",
+      "Files are located in the 'languages/' folder (e.g. languages/messages_tr.yml).",
+      "You can also specify a custom filename (e.g. 'messages_de.yml')."
+  })
+  public String LANGUAGE = "tr";
+
   @Create
   public MAIN MAIN;
 
@@ -65,6 +73,11 @@ public class Settings extends YamlConfig {
 
     @Comment("Maximum time for player to authenticate in milliseconds. If the player stays on the auth limbo for longer than this time, then the player will be kicked.")
     public int AUTH_TIME = 60000;
+    @Comment({
+        "Whether to check for plugin updates on startup.",
+        "Updates are checked from https://github.com/Crafter-CMS/LimboAuth/releases"
+    })
+    public boolean CHECK_FOR_UPDATES = true;
     public boolean ENABLE_BOSSBAR = true;
     @Comment("Available colors: PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE")
     public BossBar.Color BOSSBAR_COLOR = BossBar.Color.RED;
@@ -234,6 +247,8 @@ public class Settings extends YamlConfig {
     public List<String> REGISTER_COMMAND = List.of("/r", "/reg", "/register");
     public List<String> LOGIN_COMMAND = List.of("/l", "/log", "/login");
     public List<String> TOTP_COMMAND = List.of("/2fa", "/totp");
+    public List<String> CRAFTER_VERIFY_COMMAND = List.of("/verify", "/code", "/kod", "/v", "/onay");
+    public List<String> CRAFTER_EMAIL_COMMAND = List.of("/email", "/mail", "/eposta");
 
     @Comment("New players will be kicked with registrations-disabled-kick message")
     public boolean DISABLE_REGISTRATIONS = false;
@@ -381,8 +396,8 @@ public class Settings extends YamlConfig {
     }
     */
 
-    @Create
-    public MAIN.STRINGS STRINGS;
+    @Ignore
+    public MAIN.STRINGS STRINGS = new MAIN.STRINGS();
 
     public static class STRINGS {
 

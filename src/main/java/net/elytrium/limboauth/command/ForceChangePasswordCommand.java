@@ -29,6 +29,7 @@ import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.commons.velocity.commands.SuggestUtils;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.event.ChangePasswordEvent;
 import net.elytrium.limboauth.handler.AuthSessionHandler;
@@ -53,11 +54,11 @@ public class ForceChangePasswordCommand extends RatelimitedCommand {
     this.server = server;
     this.playerDao = playerDao;
 
-    this.message = Settings.IMP.MAIN.STRINGS.FORCE_CHANGE_PASSWORD_MESSAGE;
-    this.successful = Settings.IMP.MAIN.STRINGS.FORCE_CHANGE_PASSWORD_SUCCESSFUL;
-    this.notSuccessful = Settings.IMP.MAIN.STRINGS.FORCE_CHANGE_PASSWORD_NOT_SUCCESSFUL;
-    this.notRegistered = Settings.IMP.MAIN.STRINGS.FORCE_CHANGE_PASSWORD_NOT_REGISTERED;
-    this.usage = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.FORCE_CHANGE_PASSWORD_USAGE);
+    this.message = Messages.IMP.ADMIN.FORCE_CHANGE_PASSWORD_MESSAGE;
+    this.successful = Messages.IMP.ADMIN.FORCE_CHANGE_PASSWORD_SUCCESSFUL;
+    this.notSuccessful = Messages.IMP.ADMIN.FORCE_CHANGE_PASSWORD_NOT_SUCCESSFUL;
+    this.notRegistered = Messages.IMP.ADMIN.FORCE_CHANGE_PASSWORD_NOT_REGISTERED;
+    this.usage = LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.FORCE_CHANGE_PASSWORD_USAGE);
   }
 
   @Override

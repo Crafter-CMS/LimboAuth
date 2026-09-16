@@ -25,6 +25,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 import net.elytrium.limboauth.model.SQLRuntimeException;
@@ -45,11 +46,11 @@ public class ForceRegisterCommand extends RatelimitedCommand {
     this.plugin = plugin;
     this.playerDao = playerDao;
 
-    this.successful = Settings.IMP.MAIN.STRINGS.FORCE_REGISTER_SUCCESSFUL;
-    this.notSuccessful = Settings.IMP.MAIN.STRINGS.FORCE_REGISTER_NOT_SUCCESSFUL;
-    this.usage = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.FORCE_REGISTER_USAGE);
-    this.takenNickname = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.FORCE_REGISTER_TAKEN_NICKNAME);
-    this.incorrectNickname = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.FORCE_REGISTER_INCORRECT_NICKNAME);
+    this.successful = Messages.IMP.ADMIN.FORCE_REGISTER_SUCCESSFUL;
+    this.notSuccessful = Messages.IMP.ADMIN.FORCE_REGISTER_NOT_SUCCESSFUL;
+    this.usage = LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.FORCE_REGISTER_USAGE);
+    this.takenNickname = LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.FORCE_REGISTER_TAKEN_NICKNAME);
+    this.incorrectNickname = LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.FORCE_REGISTER_INCORRECT_NICKNAME);
   }
 
   @Override

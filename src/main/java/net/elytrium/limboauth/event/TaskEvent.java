@@ -19,6 +19,7 @@ package net.elytrium.limboauth.event;
 
 import java.util.function.Consumer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -77,7 +78,7 @@ public abstract class TaskEvent {
   }
 
   public static void reload() {
-    DEFAULT_REASON = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.EVENT_CANCELLED);
+    DEFAULT_REASON = LimboAuth.getSerializer().deserialize(Messages.IMP.GENERAL.EVENT_CANCELLED);
   }
 
   public enum Result {

@@ -21,6 +21,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.kyori.adventure.text.Component;
 
@@ -29,7 +30,7 @@ public abstract class RatelimitedCommand implements SimpleCommand {
   private final Component ratelimited;
 
   public RatelimitedCommand() {
-    this.ratelimited = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.RATELIMITED);
+    this.ratelimited = LimboAuth.getSerializer().deserialize(Messages.IMP.GENERAL.RATELIMITED);
   }
 
   @Override

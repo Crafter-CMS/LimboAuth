@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.kyori.adventure.text.Component;
@@ -38,9 +39,9 @@ public class ForceLoginCommand extends RatelimitedCommand {
   public ForceLoginCommand(LimboAuth plugin) {
     this.plugin = plugin;
 
-    this.successful = Settings.IMP.MAIN.STRINGS.FORCE_LOGIN_SUCCESSFUL;
-    this.unknownPlayer = Settings.IMP.MAIN.STRINGS.FORCE_LOGIN_UNKNOWN_PLAYER;
-    this.usage = LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.FORCE_LOGIN_USAGE);
+    this.successful = Messages.IMP.ADMIN.FORCE_LOGIN_SUCCESSFUL;
+    this.unknownPlayer = Messages.IMP.ADMIN.FORCE_LOGIN_UNKNOWN_PLAYER;
+    this.usage = LimboAuth.getSerializer().deserialize(Messages.IMP.ADMIN.FORCE_LOGIN_USAGE);
   }
 
   @Override

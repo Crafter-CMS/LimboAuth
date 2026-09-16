@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
+import net.elytrium.limboauth.Messages;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.event.ChangePasswordEvent;
 import net.elytrium.limboauth.handler.AuthSessionHandler;
@@ -52,12 +53,12 @@ public class ChangePasswordCommand extends RatelimitedCommand {
 
     Serializer serializer = LimboAuth.getSerializer();
     this.needOldPass = Settings.IMP.MAIN.CHANGE_PASSWORD_NEED_OLD_PASSWORD;
-    this.notRegistered = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_REGISTERED);
-    this.wrongPassword = serializer.deserialize(Settings.IMP.MAIN.STRINGS.WRONG_PASSWORD);
-    this.successful = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CHANGE_PASSWORD_SUCCESSFUL);
-    this.errorOccurred = serializer.deserialize(Settings.IMP.MAIN.STRINGS.ERROR_OCCURRED);
-    this.usage = serializer.deserialize(Settings.IMP.MAIN.STRINGS.CHANGE_PASSWORD_USAGE);
-    this.notPlayer = serializer.deserialize(Settings.IMP.MAIN.STRINGS.NOT_PLAYER);
+    this.notRegistered = serializer.deserialize(Messages.IMP.GENERAL.NOT_REGISTERED);
+    this.wrongPassword = serializer.deserialize(Messages.IMP.GENERAL.WRONG_PASSWORD);
+    this.successful = serializer.deserialize(Messages.IMP.COMMANDS.CHANGE_PASSWORD_SUCCESSFUL);
+    this.errorOccurred = serializer.deserialize(Messages.IMP.GENERAL.ERROR_OCCURRED);
+    this.usage = serializer.deserialize(Messages.IMP.COMMANDS.CHANGE_PASSWORD_USAGE);
+    this.notPlayer = serializer.deserialize(Messages.IMP.GENERAL.NOT_PLAYER);
   }
 
   @Override

@@ -54,6 +54,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.whitfin.siphash.SipHasher;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -85,7 +86,7 @@ import java.util.stream.Stream;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.commons.kyori.serialization.Serializers;
 import net.elytrium.commons.utils.reflection.ReflectionException;
-import net.elytrium.commons.utils.updates.UpdatesChecker;
+import net.elytrium.limboauth.dependencies.crafter.UpdateChecker;
 import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboFactory;
 import net.elytrium.limboapi.api.chunk.VirtualWorld;
@@ -99,13 +100,12 @@ import net.elytrium.limboauth.command.ForceRegisterCommand;
 import net.elytrium.limboauth.command.ForceUnregisterCommand;
 import net.elytrium.limboauth.command.LimboAuthCommand;
 import net.elytrium.limboauth.command.PremiumCommand;
-import net.elytrium.limboauth.dependencies.crafter.CrafterAPIClient;
-import net.elytrium.limboauth.dependencies.crafter.CrafterAuthHandler;
-import net.elytrium.limboauth.dependencies.crafter.model.CrafterResponse;
 import net.elytrium.limboauth.command.TotpCommand;
 import net.elytrium.limboauth.command.UnregisterCommand;
 import net.elytrium.limboauth.dependencies.DatabaseLibrary;
 import net.elytrium.limboauth.dependencies.crafter.CrafterAPIClient;
+import net.elytrium.limboauth.dependencies.crafter.CrafterAuthHandler;
+import net.elytrium.limboauth.dependencies.crafter.model.CrafterResponse;
 import net.elytrium.limboauth.event.AuthPluginReloadEvent;
 import net.elytrium.limboauth.event.PreAuthorizationEvent;
 import net.elytrium.limboauth.event.PreEvent;
@@ -238,14 +238,11 @@ public class LimboAuth {
     metrics.addCustomChart(new SimplePie("save_uuid", () -> String.valueOf(Settings.IMP.MAIN.SAVE_UUID)));
     metrics.addCustomChart(new SingleLineChart("registered_players", () -> Math.toIntExact(this.playerDao.countOf())));
 
-    this.server.getScheduler().buildTask(this, () -> {
-      if (!UpdatesChecker.checkVersionByURL("https://raw.githubusercontent.com/Elytrium/LimboAuth/master/VERSION", Settings.IMP.VERSION)) {
-        LOGGER.error("****************************************");
-        LOGGER.warn("The new LimboAuth update was found, please update.");
-        LOGGER.error("https://github.com/Elytrium/LimboAuth/releases/");
-        LOGGER.error("****************************************");
-      }
-    }).schedule();
+    if (Settings.IMP.MAIN.CHECK_FOR_UPDATES) {
+      this.server.getScheduler().buildTask(this, () -> {
+        new UpdateChecker(Settings.IMP.VERSION).checkForUpdates();
+      }).schedule();
+    }
   }
 
   @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")
@@ -271,35 +268,37 @@ public class LimboAuth {
       setSerializer(new Serializer(serializer));
     }
 
+    this.loadMessages();
+
     TaskEvent.reload();
     AuthSessionHandler.reload();
 
-    this.loginPremium = Settings.IMP.MAIN.STRINGS.LOGIN_PREMIUM.isEmpty() ? null : SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_PREMIUM);
-    if (Settings.IMP.MAIN.STRINGS.LOGIN_PREMIUM_TITLE.isEmpty() && Settings.IMP.MAIN.STRINGS.LOGIN_PREMIUM_SUBTITLE.isEmpty()) {
+    this.loginPremium = Messages.IMP.AUTH.LOGIN_PREMIUM.isEmpty() ? null : SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_PREMIUM);
+    if (Messages.IMP.AUTH.LOGIN_PREMIUM_TITLE.isEmpty() && Messages.IMP.AUTH.LOGIN_PREMIUM_SUBTITLE.isEmpty()) {
       this.loginPremiumTitle = null;
     } else {
       this.loginPremiumTitle = Title.title(
-          SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_PREMIUM_TITLE),
-          SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_PREMIUM_SUBTITLE),
+          SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_PREMIUM_TITLE),
+          SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_PREMIUM_SUBTITLE),
           Settings.IMP.MAIN.PREMIUM_TITLE_SETTINGS.toTimes()
       );
     }
 
-    this.loginFloodgate = Settings.IMP.MAIN.STRINGS.LOGIN_FLOODGATE.isEmpty() ? null : SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_FLOODGATE);
-    if (Settings.IMP.MAIN.STRINGS.LOGIN_FLOODGATE_TITLE.isEmpty() && Settings.IMP.MAIN.STRINGS.LOGIN_FLOODGATE_SUBTITLE.isEmpty()) {
+    this.loginFloodgate = Messages.IMP.AUTH.LOGIN_FLOODGATE.isEmpty() ? null : SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_FLOODGATE);
+    if (Messages.IMP.AUTH.LOGIN_FLOODGATE_TITLE.isEmpty() && Messages.IMP.AUTH.LOGIN_FLOODGATE_SUBTITLE.isEmpty()) {
       this.loginFloodgateTitle = null;
     } else {
       this.loginFloodgateTitle = Title.title(
-          SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_FLOODGATE_TITLE),
-          SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_FLOODGATE_SUBTITLE),
+          SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_FLOODGATE_TITLE),
+          SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_FLOODGATE_SUBTITLE),
           Settings.IMP.MAIN.PREMIUM_TITLE_SETTINGS.toTimes()
       );
     }
 
-    this.bruteforceAttemptKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_WRONG_PASSWORD_KICK);
-    this.nicknameInvalidKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.NICKNAME_INVALID_KICK);
-    this.reconnectKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.RECONNECT_KICK);
-    this.registrationsDisabledKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.REGISTRATIONS_DISABLED_KICK);
+    this.bruteforceAttemptKick = SERIALIZER.deserialize(Messages.IMP.AUTH.LOGIN_WRONG_PASSWORD_KICK);
+    this.nicknameInvalidKick = SERIALIZER.deserialize(Messages.IMP.KICK.NICKNAME_INVALID);
+    this.reconnectKick = SERIALIZER.deserialize(Messages.IMP.KICK.RECONNECT);
+    this.registrationsDisabledKick = SERIALIZER.deserialize(Messages.IMP.KICK.REGISTRATIONS_DISABLED);
 
     if (Settings.IMP.MAIN.CHECK_PASSWORD_STRENGTH) {
       try {
@@ -445,6 +444,11 @@ public class LimboAuth {
 
     if (Settings.IMP.MAIN.ENABLE_TOTP) {
       this.authServer.registerCommand(new LimboCommandMeta(this.filterCommands(Settings.IMP.MAIN.TOTP_COMMAND)));
+    }
+
+    if (this.databaseLibrary == DatabaseLibrary.CRAFTER) {
+      this.authServer.registerCommand(new LimboCommandMeta(this.filterCommands(Settings.IMP.MAIN.CRAFTER_VERIFY_COMMAND)));
+      this.authServer.registerCommand(new LimboCommandMeta(this.filterCommands(Settings.IMP.MAIN.CRAFTER_EMAIL_COMMAND)));
     }
 
     EventManager eventManager = this.server.getEventManager();
@@ -621,7 +625,8 @@ public class LimboAuth {
       try {
         // For now, we'll use a synchronous approach to avoid blocking
         // In a production environment, you might want to implement proper async handling
-        CompletableFuture<RegisteredPlayer> userCheck = this.crafterAuthHandler.checkUserExists(nickname);
+        String clientIp = player.getRemoteAddress().getAddress().getHostAddress();
+        CompletableFuture<RegisteredPlayer> userCheck = this.crafterAuthHandler.checkUserExists(nickname, clientIp);
         
         // Wait for the result with a timeout
         registeredPlayer = userCheck.get(5, TimeUnit.SECONDS);
@@ -1239,5 +1244,58 @@ public class LimboAuth {
    */
   public CrafterAuthHandler getCrafterAuthHandler() {
     return this.crafterAuthHandler;
+  }
+
+  private void loadMessages() {
+    File languagesDir = new File(this.dataDirectoryFile, "languages");
+    if (!languagesDir.exists()) {
+      languagesDir.mkdirs();
+    }
+
+    this.copyDefaultResource("/languages/messages_tr.yml", new File(languagesDir, "messages_tr.yml"));
+    this.copyDefaultResource("/languages/messages_en.yml", new File(languagesDir, "messages_en.yml"));
+
+    String langSetting = Settings.IMP.LANGUAGE;
+    if (langSetting == null || langSetting.trim().isEmpty()) {
+      langSetting = "tr";
+    }
+    langSetting = langSetting.trim();
+
+    File languageFile;
+    if (langSetting.endsWith(".yml") || langSetting.endsWith(".yaml")) {
+      languageFile = new File(languagesDir, langSetting);
+      if (!languageFile.exists()) {
+        languageFile = new File(this.dataDirectoryFile, langSetting);
+      }
+    } else {
+      languageFile = new File(languagesDir, "messages_" + langSetting + ".yml");
+    }
+
+    if (!languageFile.exists()) {
+      LOGGER.warn("Specified language file '{}' was not found! Falling back to default language file.", languageFile.getName());
+      languageFile = new File(languagesDir, "messages_tr.yml");
+      if (!languageFile.exists()) {
+        languageFile = new File(languagesDir, "messages_en.yml");
+      }
+    }
+
+    try {
+      Messages.IMP.reload(languageFile, Settings.IMP.PREFIX);
+      LOGGER.info("Loaded language file: {}", languageFile.getName());
+    } catch (Exception e) {
+      LOGGER.error("Failed to load language file: " + languageFile.getName(), e);
+    }
+  }
+
+  private void copyDefaultResource(String resourcePath, File destination) {
+    if (!destination.exists()) {
+      try (InputStream in = this.getClass().getResourceAsStream(resourcePath)) {
+        if (in != null) {
+          Files.copy(in, destination.toPath());
+        }
+      } catch (IOException e) {
+        LOGGER.warn("Failed to copy default resource " + resourcePath, e);
+      }
+    }
   }
 }
